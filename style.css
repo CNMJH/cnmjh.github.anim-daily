@@ -585,6 +585,25 @@ body.light-theme .new-folder-btn:hover {
     border-color: #3b82f6;
 }
 
+body.light-theme .export-folder-btn,
+body.light-theme .import-folder-btn {
+    color: #64748b;
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+body.light-theme .export-folder-btn:hover {
+    color: #3b82f6;
+    background: #dbeafe;
+    border-color: #3b82f6;
+}
+
+body.light-theme .import-folder-btn:hover {
+    color: #10b981;
+    background: #d1fae5;
+    border-color: #10b981;
+}
+
 body.light-theme .clear-history-btn {
     color: #64748b;
     background: #f8fafc;
@@ -1254,6 +1273,29 @@ body.light-theme .form-group select option {
 .new-folder-btn:hover {
     background: rgba(233,69,96,0.2);
     border-color: #e94560;
+    color: #fff;
+}
+
+.export-folder-btn, .import-folder-btn {
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+    color: rgba(255,255,255,0.7);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.export-folder-btn:hover {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: #3b82f6;
+    color: #fff;
+}
+
+.import-folder-btn:hover {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
     color: #fff;
 }
 

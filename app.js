@@ -1514,3 +1514,123 @@ document.addEventListener('dragend', function(event) {
     });
     draggedWorkId = null;
 });
+
+// ========== 收藏夹导出/导入功能 ==========
+
+// 导出收藏夹
+function exportFavorites() {
+    try {
+        // 准备导出数据
+        const exportData = {
+            version: '1.0',
+            exportTime: new Date().toISOString(),
+            favorites: favorites
+        };
+        
+        // 转换为JSON字符串
+        const jsonString = JSON.stringify(exportData, null, 2);
+        
+        // 创建Blob对象
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        
+        // 生成文件名（包含日期）
+        const now = new Date();
+        const dateStr = now.getFullYear() + 
+                      String(now.getMonth() + 1).padStart(2, '0') + 
+                      String(now.getDate()).padStart(2, '0') + '_' +
+                      String(now.getHours()).padStart(2, '0') + 
+                      String(now.getMinutes()).padStart(2, '0');
+        const fileName = `动画每日一刷_收藏夹备份_${dateStr}.json`;
+        
+        // 创建下载链接
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        alert('✅ 收藏夹导出成功！\n\n文件名：' + fileName + '\n\n请妥善保存这个文件！');
+    } catch (e) {
+        console.error('导出收藏夹失败:', e);
+        alert('❌ 导出失败！\n\n错误信息：' + e.message);
+    }
+}
+
+// 导入收藏夹
+function importFavorites(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // 重置文件输入，允许再次选择同一文件
+    event.target.value = '';
+    
+    // 确认导入
+    if (!confirm('⚠️ 确定要导入收藏夹吗？\n\n这会覆盖当前的收藏夹数据！\n\n建议先导出备份当前数据！')) {
+        return;
+    }
+    
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            const content = e.target.result;
+            const importData = JSON.parse(content);
+            
+            // 验证数据格式
+            if (!importData.favorites || !importData.favorites.folders) {
+                throw new Error('无效的收藏夹文件格式！');
+            }
+            
+            // 验证版本（可选）
+            if (importData.version && importData.version !== '1.0') {
+                console.warn('⚠️ 文件版本可能不兼容，尝试导入...');
+            }
+            
+            // 导入数据
+            favorites = importData.favorites;
+            
+            // 保存到localStorage
+            saveFavorites();
+            
+            // 刷新界面
+            renderFolders();
+            if (currentCategory === 'favorites') {
+                renderWorks(filterWorksData());
+            }
+            updateStats();
+            
+            // 显示导入信息
+            const folderCount = favorites.folders.length;
+            let totalWorks = 0;
+            favorites.folders.forEach(folder => {
+                totalWorks += folder.works.length;
+            });
+            
+            let exportTimeInfo = '';
+            if (importData.exportTime) {
+                try {
+                    const exportDate = new Date(importData.exportTime);
+                    exportTimeInfo = '\n\n备份时间：' + exportDate.toLocaleString('zh-CN');
+                } catch (e) {}
+            }
+            
+            alert('✅ 收藏夹导入成功！\n\n' +
+                  '收藏夹数量：' + folderCount + ' 个\n' +
+                  '收藏作品数：' + totalWorks + ' 个' +
+                  exportTimeInfo);
+            
+        } catch (e) {
+            console.error('导入收藏夹失败:', e);
+            alert('❌ 导入失败！\n\n错误信息：' + e.message + '\n\n请确认这是有效的收藏夹备份文件！');
+        }
+    };
+    
+    reader.onerror = function() {
+        alert('❌ 读取文件失败！');
+    };
+    
+    reader.readAsText(file);
+}

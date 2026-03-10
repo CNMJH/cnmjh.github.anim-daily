@@ -96,6 +96,9 @@
             </div>
             <div class="folder-actions">
                 <button class="new-folder-btn" onclick="createNewFolder()">+ 新建收藏夹</button>
+                <button class="export-folder-btn" onclick="exportFavorites()">📤 导出收藏夹</button>
+                <button class="import-folder-btn" onclick="document.getElementById('importFavoritesInput').click()">📥 导入收藏夹</button>
+                <input type="file" id="importFavoritesInput" style="display:none;" accept=".json" onchange="importFavorites(event)">
             </div>
         </div>
 
