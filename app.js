@@ -503,10 +503,62 @@ function renderFolders() {
     favorites.folders.forEach(folder => {
         const isActive = folder.id === favorites.currentFolder;
         const count = folder.works.length;
-        html += `<button class="folder-btn ${isActive ? 'active' : ''}" onclick="switchFolder('${folder.id}')">${escapeHtml(folder.name)} (${count})</button>`;
+        const isDefault = folder.id === 'all';
+        
+        html += `
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <button class="folder-btn ${isActive ? 'active' : ''}" onclick="switchFolder('${folder.id}')" style="flex: 1; text-align: left;">
+                    ${escapeHtml(folder.name)} (${count})
+                </button>
+                ${!isDefault ? `
+                    <button style="padding: 6px 10px; background: #dbeafe; color: #3b82f6; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem;" onclick="renameFolder('${folder.id}')">✏️</button>
+                    <button style="padding: 6px 10px; background: #fee2e2; color: #ef4444; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem;" onclick="deleteFolder('${folder.id}')">🗑️</button>
+                ` : ''}
+            </div>
+        `;
     });
     
     foldersList.innerHTML = html;
+}
+
+// 重命名收藏夹
+function renameFolder(folderId) {
+    const folder = favorites.folders.find(f => f.id === folderId);
+    if (!folder) return;
+    
+    const newName = prompt('请输入新的收藏夹名称：', folder.name);
+    if (!newName || newName.trim() === '') return;
+    
+    folder.name = newName.trim();
+    saveFavorites();
+    renderFolders();
+}
+
+// 删除收藏夹
+function deleteFolder(folderId) {
+    if (folderId === 'all') {
+        alert('❌ 不能删除"全部收藏"！');
+        return;
+    }
+    
+    const folder = favorites.folders.find(f => f.id === folderId);
+    if (!folder) return;
+    
+    if (!confirm(`确定要删除收藏夹"${folder.name}"吗？\n\n里面的收藏不会丢失，会保留在"全部收藏"中！`)) return;
+    
+    // 如果当前在这个收藏夹，切换到"全部收藏"
+    if (favorites.currentFolder === folderId) {
+        favorites.currentFolder = 'all';
+    }
+    
+    // 删除收藏夹
+    favorites.folders = favorites.folders.filter(f => f.id !== folderId);
+    
+    saveFavorites();
+    renderFolders();
+    if (currentCategory === 'favorites') {
+        renderWorks(filterWorksData());
+    }
 }
 
 // 渲染历史记录区域
