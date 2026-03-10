@@ -1190,6 +1190,33 @@ body.light-theme .form-group select option {
     cursor: grabbing;
 }
 
+/* 确保图片区域不拦截拖拽事件，但按钮可以点击 */
+.work-card-image {
+    pointer-events: none;
+}
+
+.work-card-image .favorite-btn,
+.work-card-image .work-type-tag,
+.work-card-image .source-tag {
+    pointer-events: auto;
+}
+
+.work-card-image img {
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* 拖拽时的视觉反馈 */
+.work-card[draggable="true"]:hover {
+    cursor: grab;
+}
+
+.work-card.dragging {
+    opacity: 0.5;
+    transform: scale(1.02);
+}
+
 .folder-btn {
     transition: all 0.2s ease;
 }

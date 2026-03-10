@@ -1264,10 +1264,10 @@ function renderWorks(works) {
              draggable="true" 
              ondragstart="handleDragStart(event, '${workId.replace(/'/g, "\\'")}')"
              style="cursor:pointer">
-            <div class="work-card-image">
-                <img src="${escapeHtml(item.image && item.image.trim() !== '' ? item.image : 'https://via.placeholder.com/400x240/1a1a2e/e94560?text=Animation+Art')}" alt="${escapeHtml(item.title)}">
+            <div class="work-card-image" style="pointer-events: none;">
+                <img src="${escapeHtml(item.image && item.image.trim() !== '' ? item.image : 'https://via.placeholder.com/400x240/1a1a2e/e94560?text=Animation+Art')}" alt="${escapeHtml(item.title)}" draggable="false">
                 <span class="work-type-tag ${item.type}">${typeText}</span>
-                <button class="favorite-btn ${favClass}" onclick="toggleFavorite('${workId.replace(/'/g, "\\'")}', event)" title="收藏">${favIcon}</button>
+                <button class="favorite-btn ${favClass}" onclick="toggleFavorite('${workId.replace(/'/g, "\\'")}', event)" title="收藏" style="pointer-events: auto;">${favIcon}</button>
             </div>
             <div class="work-content">
                 <div class="work-tags">
@@ -1282,12 +1282,12 @@ function renderWorks(works) {
                 ` : ''}
                 <div class="work-meta">
                     <div class="work-actions">
-                        <button class="like-btn" onclick="toggleLike('${workId.replace(/'/g, "\\'")}', event)" title="点赞">
+                        <button class="like-btn" onclick="toggleLike('${workId.replace(/'/g, "\\'")}', event)" title="点赞" style="pointer-events: auto;">
                             <span class="like-icon">${isLikedValue ? '❤️' : '🤍'}</span>
                             <span class="like-count">${likeCount}</span>
                         </button>
-                        <button class="share-btn" onclick="shareContent('${workId.replace(/'/g, "\\'")}', '${escapeHtml(item.title)}', '${safeUrl}', event)" title="分享">📤</button>
-                        <button class="report-btn" onclick="markLinkInvalid('${workId.replace(/'/g, "\\'")}', event)" title="举报失效链接">⚠️</button>
+                        <button class="share-btn" onclick="shareContent('${workId.replace(/'/g, "\\'")}', '${escapeHtml(item.title)}', '${safeUrl}', event)" title="分享" style="pointer-events: auto;">📤</button>
+                        <button class="report-btn" onclick="markLinkInvalid('${workId.replace(/'/g, "\\'")}', event)" title="举报失效链接" style="pointer-events: auto;">⚠️</button>
                         <span class="work-date">${escapeHtml(item.date)}</span>
                     </div>
                 </div>
@@ -1515,8 +1515,6 @@ function handleDrop(event, targetFolderId) {
     if (currentCategory === 'favorites') {
         renderWorks(filterWorksData());
     }
-    
-    alert('✅ 已移动到收藏夹：' + (targetFolder ? targetFolder.name : targetFolderId));
     
     draggedWorkId = null;
 }
