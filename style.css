@@ -607,6 +607,17 @@ body.light-theme .tags-title {
     color: #1e293b;
 }
 
+body.light-theme .tags-toggle-btn {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #64748b;
+}
+
+body.light-theme .tags-toggle-btn:hover {
+    background: #e2e8f0;
+    color: #3b82f6;
+}
+
 body.light-theme .folders-title {
     color: #1e293b;
 }
@@ -1096,11 +1107,34 @@ body.light-theme .form-group select option {
     border-radius: 10px;
 }
 
+.tags-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
 .tags-title {
     color: rgba(255,255,255,0.8);
     font-size: 0.9rem;
-    margin-bottom: 12px;
+    margin: 0;
     font-weight: 600;
+}
+
+.tags-toggle-btn {
+    padding: 4px 12px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    color: rgba(255,255,255,0.7);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.tags-toggle-btn:hover {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
 }
 
 .tags-list {

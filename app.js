@@ -653,9 +653,31 @@ function getAllTags() {
 }
 
 // 渲染标签按钮
+// 标签展开/隐藏状态
+let tagsExpanded = false;
+
+// 切换标签展开/隐藏
+function toggleTags() {
+    tagsExpanded = !tagsExpanded;
+    const tagsList = document.getElementById('tagsList');
+    const toggleBtn = document.getElementById('tagsToggleBtn');
+    
+    if (tagsExpanded) {
+        tagsList.style.display = 'flex';
+        toggleBtn.textContent = '收起';
+    } else {
+        tagsList.style.display = 'none';
+        toggleBtn.textContent = '展开';
+    }
+    
+    // 保存状态到localStorage
+    localStorage.setItem('tagsExpanded', tagsExpanded);
+}
+
 function renderTags() {
     const tagsList = document.getElementById('tagsList');
     const tagsSection = document.getElementById('tagsSection');
+    const toggleBtn = document.getElementById('tagsToggleBtn');
     const allTags = getAllTags();
     
     if (allTags.length === 0) {
@@ -664,6 +686,21 @@ function renderTags() {
     }
     
     tagsSection.style.display = 'block';
+    
+    // 从localStorage加载展开状态
+    const saved = localStorage.getItem('tagsExpanded');
+    if (saved !== null) {
+        tagsExpanded = saved === 'true';
+    }
+    
+    // 设置初始显示状态
+    if (tagsExpanded) {
+        tagsList.style.display = 'flex';
+        toggleBtn.textContent = '收起';
+    } else {
+        tagsList.style.display = 'none';
+        toggleBtn.textContent = '展开';
+    }
     
     let html = '<button class="tag-btn ' + (currentTag === '' ? 'active' : '') + '" onclick="selectTag(\'\')">全部标签</button>';
     
