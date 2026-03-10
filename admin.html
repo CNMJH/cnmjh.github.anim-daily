@@ -638,9 +638,20 @@
             const submission = pendingSubmissions.find(s => s.id === id);
             if (!submission) return;
 
+            // 如果标题是"待审核内容"或者空的，让用户确认或修改
+            let finalTitle = submission.title;
+            if (!finalTitle || finalTitle === '待审核内容') {
+                const userTitle = prompt('📝 这个投稿没有填写标题，请输入一个合适的标题：', submission.url);
+                if (userTitle && userTitle.trim()) {
+                    finalTitle = userTitle.trim();
+                } else {
+                    finalTitle = submission.url; // 实在不行就用URL当标题
+                }
+            }
+
             const jsonData = {
                 id: 'work_' + Date.now(),
-                title: submission.title,
+                title: finalTitle,
                 type: submission.type,
                 subcategory: submission.subcategory,
                 url: submission.url,
