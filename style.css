@@ -167,6 +167,111 @@ body.light-theme .recommend-card-meta {
     color: #94a3b8;
 }
 
+body.light-theme .recommend-header h2 {
+    color: #1e293b;
+}
+
+body.light-theme .refresh-btn {
+    color: #64748b;
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+}
+
+body.light-theme .refresh-btn:hover {
+    color: #3b82f6;
+    background: #dbeafe;
+    border-color: #3b82f6;
+}
+
+body.light-theme .collapse-btn {
+    color: #64748b;
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+}
+
+body.light-theme .collapse-btn:hover {
+    color: #3b82f6;
+    background: #dbeafe;
+    border-color: #3b82f6;
+}
+
+body.light-theme header h1 {
+    color: #fff;
+}
+
+body.light-theme .subtitle {
+    color: rgba(255,255,255,0.95);
+}
+
+body.light-theme .category-btn {
+    color: #64748b;
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+body.light-theme .category-btn:hover {
+    color: #3b82f6;
+    background: #dbeafe;
+    border-color: #3b82f6;
+}
+
+body.light-theme .category-btn.active {
+    color: #fff;
+}
+
+body.light-theme .sub-category-btn {
+    color: #64748b;
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+body.light-theme .sub-category-btn:hover {
+    color: #3b82f6;
+    background: #dbeafe;
+    border-color: #3b82f6;
+}
+
+body.light-theme .sub-category-btn.active {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.15);
+    border-color: #3b82f6;
+}
+
+body.light-theme .search-input-wrapper input {
+    color: #1e293b;
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+body.light-theme .search-input-wrapper input::placeholder {
+    color: #94a3b8;
+}
+
+body.light-theme .search-input-wrapper input:focus {
+    border-color: #3b82f6;
+    background: #ffffff;
+}
+
+body.light-theme .quick-btn {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+body.light-theme .quick-btn:hover {
+    background: #dbeafe;
+    border-color: #3b82f6;
+}
+
+body.light-theme .stats-bar {
+    color: #64748b;
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+body.light-theme #totalCount {
+    color: #3b82f6;
+}
+
 /* 我的收藏按钮 */
 .favorites-btn {
     margin: 20px auto 0;
