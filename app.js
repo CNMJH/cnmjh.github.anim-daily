@@ -1186,3 +1186,29 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// 隐藏的管理员入口 - 连续点击3次页脚
+let footerClickCount = 0;
+let footerClickTimer = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const footerText = document.getElementById('footerText');
+    if (footerText) {
+        footerText.addEventListener('click', function() {
+            footerClickCount++;
+            
+            if (footerClickTimer) {
+                clearTimeout(footerClickTimer);
+            }
+            
+            if (footerClickCount === 3) {
+                window.location.href = 'admin.html';
+                footerClickCount = 0;
+            } else {
+                footerClickTimer = setTimeout(function() {
+                    footerClickCount = 0;
+                }, 1500);
+            }
+        });
+    }
+});
