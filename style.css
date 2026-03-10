@@ -145,6 +145,70 @@ body.light-theme .work-description {
     color: #64748b;
 }
 
+body.light-theme .work-meta {
+    border-color: #e2e8f0;
+    color: #94a3b8;
+}
+
+body.light-theme .work-category {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+body.light-theme .work-source {
+    color: #64748b;
+    background: #f1f5f9;
+}
+
+body.light-theme .work-artist {
+    color: #64748b;
+}
+
+body.light-theme .work-date {
+    color: #94a3b8;
+    background: #f1f5f9;
+}
+
+body.light-theme .share-btn {
+    color: #64748b;
+    background: #f1f5f9;
+}
+
+body.light-theme .share-btn:hover {
+    color: #3b82f6;
+    background: #dbeafe;
+}
+
+body.light-theme .like-btn {
+    color: #64748b;
+    background: #f1f5f9;
+}
+
+body.light-theme .like-btn:hover {
+    color: #3b82f6;
+    background: #dbeafe;
+}
+
+body.light-theme .like-btn .like-count {
+    color: #64748b;
+}
+
+body.light-theme .report-btn {
+    color: #64748b;
+    background: #f1f5f9;
+}
+
+body.light-theme .report-btn:hover {
+    color: #ef4444;
+    background: #fef2f2;
+}
+
+body.light-theme .work-card-tag {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
 body.light-theme header {
     background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
 }
@@ -165,6 +229,12 @@ body.light-theme .recommend-card-title {
 
 body.light-theme .recommend-card-meta {
     color: #94a3b8;
+}
+
+body.light-theme .recommend-card:hover {
+    background: #e2e8f0;
+    border-color: #3b82f6;
+    box-shadow: 0 8px 25px rgba(59,130,246,0.15);
 }
 
 body.light-theme .recommend-header h2 {
@@ -522,6 +592,21 @@ body.light-theme .folders-title {
 
 body.light-theme .history-title {
     color: #1e293b;
+}
+
+body.light-theme .tags-section {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+body.light-theme .folders-section {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+body.light-theme .history-section {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
 }
 
 body.light-theme .filter-panel {
