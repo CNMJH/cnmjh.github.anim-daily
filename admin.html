@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理员后台 - 动画每日一刷</title>
     <link rel="stylesheet" href="style.css?v=202603101800">
+    <script src="supabase.js"></script>
     <style>
         body {
             padding: 20px;
@@ -209,6 +210,7 @@
             <h1>🎛️ 管理员后台</h1>
             <div style="display: flex; gap: 10px; align-items: center;">
                 <button class="back-btn" onclick="openTokenConfig()">⚙️ 配置GitHub</button>
+                <button class="back-btn" onclick="refreshSubmissions()">🔄 刷新投稿</button>
                 <button class="back-btn" onclick="goBack()">← 返回网站</button>
             </div>
         </div>
@@ -505,10 +507,23 @@
         }
 
         async function loadPendingSubmissions() {
-            // 先从GitHub Issues加载
-            const issues = await getIssuesFromGithub();
+            // 先从Supabase加载
+            let supabaseSubmissions = [];
+            try {
+                supabaseSubmissions = await getPendingSubmissionsFromSupabase();
+            } catch (e) {
+                console.error('❌ 从Supabase加载投稿失败:', e);
+            }
             
-            // 再从localStorage加载本地的投稿
+            // 再从GitHub Issues加载（兼容旧数据）
+            let issues = [];
+            try {
+                issues = await getIssuesFromGithub();
+            } catch (e) {
+                console.error('❌ 从GitHub加载投稿失败:', e);
+            }
+            
+            // 再从localStorage加载本地的投稿（兼容旧数据）
             let localSubmissions = [];
             try {
                 const saved = localStorage.getItem('animDailyPendingSubmissions');
@@ -520,7 +535,14 @@
             }
             
             // 合并
-            pendingSubmissions = [...issues, ...localSubmissions];
+            pendingSubmissions = [...supabaseSubmissions, ...issues, ...localSubmissions];
+        }
+
+        async function refreshSubmissions() {
+            await loadPendingSubmissions();
+            updateStats();
+            renderSubmissions();
+            alert('✅ 投稿列表已刷新！');
         }
 
         function updateStats() {
@@ -563,7 +585,7 @@
                                 <span class="meta-tag">📁 ${getSubcategoryName(submission.subcategory)}</span>
                                 <span class="meta-tag">🌐 ${escapeHtml(submission.source)}</span>
                                 <span class="meta-tag">🕐 ${formatDate(submission.submittedAt)}</span>
-                                ${submission.fromIssue ? '<span class="meta-tag" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff;">📌 来自GitHub Issue</span>' : '<span class="meta-tag">💾 本地保存</span>'}
+                                ${submission.fromSupabase ? '<span class="meta-tag" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: #fff;">☁️ 来自Supabase</span>' : submission.fromIssue ? '<span class="meta-tag" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff;">📌 来自GitHub Issue</span>' : '<span class="meta-tag">💾 本地保存</span>'}
                             </div>
                             ${submission.description ? `<div style="margin-top: 10px; color: #64748b;">${escapeHtml(submission.description)}</div>` : ''}
                             ${submission.tags && submission.tags.length > 0 ? `
@@ -638,8 +660,12 @@
             const success = await updateGithubWorksData(jsonData);
             
             if (success) {
+                // 如果是来自Supabase的投稿，更新状态
+                if (submission.fromSupabase && submission.supabaseId) {
+                    await updateSubmissionStatus(submission.supabaseId, 'approved');
+                }
                 // 如果是来自Issue的投稿，关闭Issue
-                if (submission.fromIssue && submission.issueNumber) {
+                else if (submission.fromIssue && submission.issueNumber) {
                     await closeIssue(submission.issueNumber);
                 }
                 
@@ -656,8 +682,12 @@
             if (!submission) return;
 
             if (confirm('❌ 确定要拒绝这条投稿吗？此操作不可撤销！')) {
+                // 如果是来自Supabase的投稿，更新状态
+                if (submission.fromSupabase && submission.supabaseId) {
+                    await updateSubmissionStatus(submission.supabaseId, 'rejected');
+                }
                 // 如果是来自Issue的投稿，关闭Issue
-                if (submission.fromIssue && submission.issueNumber) {
+                else if (submission.fromIssue && submission.issueNumber) {
                     await closeIssue(submission.issueNumber);
                 }
                 

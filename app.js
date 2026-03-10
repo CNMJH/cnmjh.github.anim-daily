@@ -178,23 +178,28 @@ async function handleSubmit(event) {
     // 处理标签
     const tags = tagsInput ? tagsInput.split(/\s+/).filter(t => t.trim()).slice(0, 5) : [];
     
-    // 生成投稿信息文本
-    const issueTitle = `[投稿] ${title || '待审核内容'}`;
-    const issueBody = `## 投稿信息\n\n**内容链接：** ${url}\n**内容分类：** ${type === 'animation' ? '动画作品' : 'Pose参考'}\n**子分类：** ${getSubcategoryName(subcategory)}\n**内容标题：** ${title || '（未填写）'}\n**简短描述：** ${description || '（未填写）'}\n**标签：** ${tags.length > 0 ? tags.join(', ') : '（无）'}\n**来源：** ${getSourceFromUrl(url)}\n**提交时间：** ${new Date().toLocaleString('zh-CN')}\n\n---\n请管理员审核此投稿！`;
+    // 创建投稿对象
+    const submission = {
+        url: url,
+        type: type,
+        subcategory: subcategory,
+        title: title || '待审核内容',
+        description: description || '',
+        tags: tags,
+        source: getSourceFromUrl(url)
+    };
     
-    // 生成GitHub Issue链接
-    const githubIssueUrl = `https://github.com/CNMJH/cnmjh.github.anim-daily/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}&labels=${encodeURIComponent('投稿,待审核')}`;
-    
-    // 询问用户
-    const choice = confirm('✅ 投稿信息已生成！\n\n请选择投稿方式：\n\n📝 点击"确定" → 直接打开GitHub提交Issue（推荐）\n💾 点击"取消" → 保存到本地浏览器\n\n（提交Issue需要GitHub账号）');
-    
-    if (choice) {
-        // 打开GitHub Issue页面
-        window.open(githubIssueUrl, '_blank');
-        alert('📝 正在打开GitHub提交页面...\n\n请在打开的页面中点击"Submit new issue"完成投稿！');
-    } else {
-        // 保存到本地
-        const submission = {
+    try {
+        // 保存到Supabase
+        await saveSubmissionToSupabase(submission);
+        alert('✅ 投稿成功！管理员会尽快审核！');
+        closeSubmitModal();
+    } catch (e) {
+        console.error('保存投稿失败:', e);
+        alert('❌ 网络错误，保存到本地...');
+        
+        // 备用方案：保存到本地
+        const localSubmission = {
             id: 'submission_' + Date.now(),
             url: url,
             type: type,
@@ -211,13 +216,10 @@ async function handleSubmit(event) {
             status: 'pending'
         };
         
-        pendingSubmissions.push(submission);
+        pendingSubmissions.push(localSubmission);
         savePendingSubmissions();
-        
-        alert('💾 投稿已保存到本地！');
+        closeSubmitModal();
     }
-    
-    closeSubmitModal();
 }
 
 function getSubcategoryName(subcategory) {
