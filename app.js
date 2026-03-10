@@ -376,12 +376,12 @@ function scheduleLinkCheck() {
 }
 
 // 标记链接为失效（用户举报）
-async function markLinkInvalid(workId, event) {
+function markLinkInvalid(workId, event) {
     event.stopPropagation(); // 阻止冒泡
     
     if (!confirm('确定要举报这个链接失效吗？')) return;
     
-    // 先保存到本地
+    // 保存到本地
     linkCheckResults[workId] = {
         workId: workId,
         status: 'invalid',
@@ -390,54 +390,7 @@ async function markLinkInvalid(workId, event) {
     };
     saveLinkCheckResults();
     
-    // 尝试提交到GitHub Issues
-    try {
-        // 先获取作品信息
-        const work = worksData.find(w => w.id === workId);
-        const workTitle = work ? work.title : '未知作品';
-        const workUrl = work ? work.url : '无链接';
-        
-        // 加载GitHub配置
-        let ghConfig = {};
-        try {
-            const saved = localStorage.getItem('animDailyGithubConfig');
-            if (saved) {
-                ghConfig = JSON.parse(saved);
-            }
-        } catch (e) {}
-        
-        // 如果有GitHub配置，提交到Issues
-        if (ghConfig.token && ghConfig.owner && ghConfig.repo) {
-            const issueTitle = `[举报] 链接失效：${workTitle}`;
-            const issueBody = `## 举报信息\n\n**作品ID：** ${workId}\n**作品标题：** ${workTitle}\n**内容链接：** ${workUrl}\n**举报时间：** ${new Date().toLocaleString('zh-CN')}\n\n---\n请管理员检查此链接！`;
-            
-            const response = await fetch(`https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/issues`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `token ${ghConfig.token}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    title: issueTitle,
-                    body: issueBody,
-                    labels: ['举报', '链接失效']
-                })
-            });
-            
-            if (response.ok) {
-                alert('✅ 已提交举报到GitHub！感谢反馈！');
-            } else {
-                alert('⚠️ 已保存到本地，但提交GitHub失败！');
-            }
-        } else {
-            alert('✅ 已保存到本地！\n\n（如需提交到GitHub，请先在管理员后台配置GitHub）');
-        }
-    } catch (e) {
-        console.error('提交举报失败:', e);
-        alert('✅ 已保存到本地！感谢反馈！');
-    }
-    
+    alert('✅ 已提交举报！感谢反馈！管理员会尽快处理！');
     renderWorks(filterWorksData());
 }
 
