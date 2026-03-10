@@ -685,6 +685,14 @@ function renderTags() {
     const toggleBtn = document.getElementById('tagsToggleBtn');
     const allTags = getAllTags();
     
+    // 在"我的收藏"和"浏览历史"界面隐藏热门标签
+    if (currentCategory === 'favorites' || currentCategory === 'history') {
+        if (tagsSection) {
+            tagsSection.style.display = 'none';
+        }
+        return;
+    }
+    
     if (allTags.length === 0) {
         tagsSection.style.display = 'none';
         return;
@@ -1321,7 +1329,17 @@ document.querySelectorAll('.category-btn').forEach(btn => {
         currentCategory = this.dataset.category || (this.id === 'favoriteBtn' ? 'favorites' : (this.id === 'historyBtn' ? 'history' : 'all'));
         currentTag = ''; // 清空标签选择
         currentPage = 1;
-        renderTags();
+        
+        // 在"我的收藏"和"浏览历史"界面隐藏热门标签
+        const tagsSection = document.getElementById('tagsSection');
+        if (currentCategory === 'favorites' || currentCategory === 'history') {
+            if (tagsSection) {
+                tagsSection.style.display = 'none';
+            }
+        } else {
+            renderTags(); // 其他分类正常显示标签
+        }
+        
         renderFolders(); // 渲染收藏夹选择器
         renderHistorySection(); // 渲染历史记录区域
         updateStats();
