@@ -3,6 +3,73 @@
 // 新闻数据（从 JSON 文件加载）
 let worksData = [];
 
+// ========== 卡片样式配置 ==========
+const defaultCardStyle = {
+    imageHeight: 240,
+    contentHeight: 200,
+    autoContentHeight: true,
+    columns: 3,
+    maxRows: 3
+};
+
+let cardStyleConfig = { ...defaultCardStyle };
+
+// 加载卡片样式配置
+function loadCardStyleConfig() {
+    try {
+        const saved = localStorage.getItem('animDailyCardStyle');
+        if (saved) {
+            cardStyleConfig = { ...defaultCardStyle, ...JSON.parse(saved) };
+        }
+    } catch (e) {
+        console.error('加载卡片样式配置失败:', e);
+    }
+}
+
+// 应用卡片样式配置
+function applyCardStyleConfig() {
+    // 应用图片高度
+    const styleEl = document.getElementById('card-style-dynamic') || document.createElement('style');
+    styleEl.id = 'card-style-dynamic';
+    
+    let css = '';
+    
+    // 图片高度
+    css += `.work-card-image { height: ${cardStyleConfig.imageHeight}px !important; }\n`;
+    
+    // 内容高度
+    if (!cardStyleConfig.autoContentHeight) {
+        css += `.work-content { min-height: ${cardStyleConfig.contentHeight}px !important; }\n`;
+    }
+    
+    // PC端列数
+    const columns = cardStyleConfig.columns;
+    let gridTemplateColumns = '';
+    if (columns === 2) {
+        gridTemplateColumns = 'repeat(auto-fit, minmax(450px, 1fr))';
+    } else if (columns === 3) {
+        gridTemplateColumns = 'repeat(auto-fit, minmax(350px, 1fr))';
+    } else if (columns === 4) {
+        gridTemplateColumns = 'repeat(auto-fit, minmax(280px, 1fr))';
+    } else if (columns === 5) {
+        gridTemplateColumns = 'repeat(auto-fit, minmax(220px, 1fr))';
+    }
+    
+    if (gridTemplateColumns) {
+        css += `@media (min-width: 1024px) { .works-grid { grid-template-columns: ${gridTemplateColumns} !important; } }\n`;
+    }
+    
+    // 每页行数
+    const ITEMS_PER_PAGE = cardStyleConfig.columns * cardStyleConfig.maxRows;
+    window.ITEMS_PER_PAGE = ITEMS_PER_PAGE;
+    
+    styleEl.textContent = css;
+    
+    if (!document.getElementById('card-style-dynamic')) {
+        document.head.appendChild(styleEl);
+    }
+}
+
 // 收藏数据
 let favorites = {
     folders: [
@@ -1275,7 +1342,7 @@ function renderWorks(works) {
              ondragstart="handleDragStart(event, '${workId.replace(/'/g, "\\'")}')"
              style="cursor:pointer">
             <div class="work-card-image" style="pointer-events: none;">
-                <img src="${escapeHtml(item.image && item.image.trim() !== '' ? item.image : 'https://via.placeholder.com/400x240/1a1a2e/e94560?text=Animation+Art')}" alt="${escapeHtml(item.title)}" draggable="false">
+                <img src="${escapeHtml(item.image && item.image.trim() !== '' ? item.image : 'https://via.placeholder.com/400x240/1a1a2e/e94560')}" alt="${escapeHtml(item.title)}" draggable="false">
                 <span class="work-type-tag ${item.type}">${typeText}</span>
                 <button class="favorite-btn ${favClass}" onclick="toggleFavorite('${workId.replace(/'/g, "\\'")}', event)" title="收藏" style="pointer-events: auto;">${favIcon}</button>
             </div>
@@ -1378,6 +1445,8 @@ document.getElementById('searchInput').addEventListener('keypress', function(e) 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
     loadTheme();
+    loadCardStyleConfig(); // 加载卡片样式配置
+    applyCardStyleConfig(); // 应用卡片样式配置
     loadFavorites();
     loadHistory();
     loadLikes();
