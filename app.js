@@ -1051,7 +1051,7 @@ function renderWorks(works) {
         } else if (currentCategory === 'history') {
             emptyText = '还没有浏览记录，点击卡片浏览作品吧！';
         }
-        container.innerHTML = `<p style="text-align:center;color:rgba(255,255,255,0.6);padding:60px;grid-column:1/-1;">${emptyText}</p>`;
+        container.innerHTML = `<p class="empty-state-text" style="text-align:center;padding:60px;grid-column:1/-1;">${emptyText}</p>`;
         document.getElementById('pagination').style.display = 'none';
         return;
     }

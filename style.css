@@ -1580,6 +1580,15 @@ footer {
     color: rgba(255,255,255,0.5);
 }
 
+/* 空状态文字 */
+.empty-state-text {
+    color: rgba(255,255,255,0.6);
+}
+
+body.light-theme .empty-state-text {
+    color: #64748b;
+}
+
 /* 响应式 */
 @media (max-width: 768px) {
     header {
