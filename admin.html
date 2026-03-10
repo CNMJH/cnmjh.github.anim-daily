@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理员后台 - 动画每日一刷</title>
-    <link rel="stylesheet" href="style.css?v=202603101730">
+    <link rel="stylesheet" href="style.css?v=202603101800">
     <style>
         body {
             padding: 20px;
@@ -354,6 +354,109 @@
             return JSON.parse(content);
         }
 
+        async function getIssuesFromGithub() {
+            if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo) {
+                return [];
+            }
+
+            try {
+                const url = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/issues?state=open&labels=待审核`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `token ${githubConfig.token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('获取Issues失败');
+                }
+
+                const issues = await response.json();
+                return issues.map(issue => parseIssueToSubmission(issue));
+            } catch (e) {
+                console.error('❌ 从GitHub获取Issues失败:', e);
+                return [];
+            }
+        }
+
+        function parseIssueToSubmission(issue) {
+            const body = issue.body || '';
+            
+            // 从Issue body中提取信息
+            const urlMatch = body.match(/\*\*内容链接：\*\*\s*(.+?)\n/);
+            const typeMatch = body.match(/\*\*内容分类：\*\*\s*(.+?)\n/);
+            const subcategoryMatch = body.match(/\*\*子分类：\*\*\s*(.+?)\n/);
+            const titleMatch = body.match(/\*\*内容标题：\*\*\s*(.+?)\n/);
+            const descriptionMatch = body.match(/\*\*简短描述：\*\*\s*(.+?)\n/);
+            const tagsMatch = body.match(/\*\*标签：\*\*\s*(.+?)\n/);
+            const sourceMatch = body.match(/\*\*来源：\*\*\s*(.+?)\n/);
+
+            const typeStr = typeMatch ? typeMatch[1].trim() : '';
+            const type = typeStr.includes('动画') ? 'animation' : 'pose';
+
+            const subcategoryStr = subcategoryMatch ? subcategoryMatch[1].trim() : '';
+            const subcategoryMap = {
+                '角色动画': 'character',
+                '动作场面': 'action',
+                '表情动画': 'facial',
+                '生物动画': 'creature',
+                '站立姿势': 'stand',
+                '动态姿势': 'action_pose',
+                '手部参考': 'hand'
+            };
+            const subcategory = subcategoryMap[subcategoryStr] || 'character';
+
+            const tagsStr = tagsMatch ? tagsMatch[1].trim() : '';
+            const tags = tagsStr && tagsStr !== '（无）' ? tagsStr.split(/[,，]\s*/).filter(t => t.trim()) : [];
+
+            return {
+                id: 'issue_' + issue.number,
+                issueNumber: issue.number,
+                url: urlMatch ? urlMatch[1].trim() : '',
+                type: type,
+                subcategory: subcategory,
+                title: titleMatch && titleMatch[1].trim() !== '（未填写）' ? titleMatch[1].trim() : issue.title,
+                description: descriptionMatch && descriptionMatch[1].trim() !== '（未填写）' ? descriptionMatch[1].trim() : '',
+                tags: tags,
+                source: sourceMatch ? sourceMatch[1].trim() : '未知',
+                artist: '待确认',
+                date: new Date().toISOString().split('T')[0],
+                image: '',
+                likes: 0,
+                submittedAt: issue.created_at,
+                status: 'pending',
+                fromIssue: true
+            };
+        }
+
+        async function closeIssue(issueNumber) {
+            if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo) {
+                return false;
+            }
+
+            try {
+                const url = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/issues/${issueNumber}`;
+                const response = await fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `token ${githubConfig.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        state: 'closed',
+                        labels: ['已处理']
+                    })
+                });
+
+                return response.ok;
+            } catch (e) {
+                console.error('❌ 关闭Issue失败:', e);
+                return false;
+            }
+        }
+
         async function updateGithubWorksData(newWork) {
             if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo) {
                 alert('❌ 请先配置GitHub！点击右上角"⚙️ 配置GitHub"');
@@ -401,15 +504,23 @@
             }
         }
 
-        function loadPendingSubmissions() {
+        async function loadPendingSubmissions() {
+            // 先从GitHub Issues加载
+            const issues = await getIssuesFromGithub();
+            
+            // 再从localStorage加载本地的投稿
+            let localSubmissions = [];
             try {
                 const saved = localStorage.getItem('animDailyPendingSubmissions');
                 if (saved) {
-                    pendingSubmissions = JSON.parse(saved);
+                    localSubmissions = JSON.parse(saved);
                 }
             } catch (e) {
-                console.error('❌ 加载待审核投稿失败:', e);
+                console.error('❌ 加载本地待审核投稿失败:', e);
             }
+            
+            // 合并
+            pendingSubmissions = [...issues, ...localSubmissions];
         }
 
         function updateStats() {
@@ -452,6 +563,7 @@
                                 <span class="meta-tag">📁 ${getSubcategoryName(submission.subcategory)}</span>
                                 <span class="meta-tag">🌐 ${escapeHtml(submission.source)}</span>
                                 <span class="meta-tag">🕐 ${formatDate(submission.submittedAt)}</span>
+                                ${submission.fromIssue ? '<span class="meta-tag" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff;">📌 来自GitHub Issue</span>' : '<span class="meta-tag">💾 本地保存</span>'}
                             </div>
                             ${submission.description ? `<div style="margin-top: 10px; color: #64748b;">${escapeHtml(submission.description)}</div>` : ''}
                             ${submission.tags && submission.tags.length > 0 ? `
@@ -526,6 +638,11 @@
             const success = await updateGithubWorksData(jsonData);
             
             if (success) {
+                // 如果是来自Issue的投稿，关闭Issue
+                if (submission.fromIssue && submission.issueNumber) {
+                    await closeIssue(submission.issueNumber);
+                }
+                
                 pendingSubmissions = pendingSubmissions.filter(s => s.id !== id);
                 savePendingSubmissions();
                 renderSubmissions();
@@ -534,8 +651,16 @@
             }
         }
 
-        function rejectSubmission(id) {
+        async function rejectSubmission(id) {
+            const submission = pendingSubmissions.find(s => s.id === id);
+            if (!submission) return;
+
             if (confirm('❌ 确定要拒绝这条投稿吗？此操作不可撤销！')) {
+                // 如果是来自Issue的投稿，关闭Issue
+                if (submission.fromIssue && submission.issueNumber) {
+                    await closeIssue(submission.issueNumber);
+                }
+                
                 pendingSubmissions = pendingSubmissions.filter(s => s.id !== id);
                 savePendingSubmissions();
                 renderSubmissions();
@@ -557,9 +682,9 @@
             window.location.href = 'index.html';
         }
 
-        function init() {
+        async function init() {
             loadGithubConfig();
-            loadPendingSubmissions();
+            await loadPendingSubmissions();
             updateStats();
             renderSubmissions();
         }

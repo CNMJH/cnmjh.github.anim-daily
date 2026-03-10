@@ -159,7 +159,7 @@ function isValidUrl(url) {
 }
 
 // 处理投稿提交
-function handleSubmit(event) {
+async function handleSubmit(event) {
     event.preventDefault();
     
     const url = document.getElementById('submitUrl').value;
@@ -178,7 +178,48 @@ function handleSubmit(event) {
     // 处理标签
     const tags = tagsInput ? tagsInput.split(/\s+/).filter(t => t.trim()).slice(0, 5) : [];
     
-    // 创建投稿对象
+    // 询问用户是否有GitHub Token（可选，没有的话用备用方案）
+    const useGithub = confirm('💡 您有GitHub账号吗？\n\n如果有，我们可以直接把投稿提交到GitHub Issues（需要您提供一个只需要issues权限的Token）。\n\n如果没有，我们会把投稿保存到您的本地浏览器（需要您手动发给管理员）。\n\n点击"确定"使用GitHub，点击"取消"使用本地保存。');
+    
+    if (useGithub) {
+        const token = prompt('🔑 请输入您的GitHub Personal Access Token（只需要repo:issues权限）：\n\n（如果您不想输入，点击取消，我们会使用本地保存）');
+        
+        if (token) {
+            try {
+                // 创建GitHub Issue
+                const issueTitle = `[投稿] ${title || '待审核内容'}`;
+                const issueBody = `## 投稿信息\n\n**内容链接：** ${url}\n**内容分类：** ${type === 'animation' ? '动画作品' : 'Pose参考'}\n**子分类：** ${getSubcategoryName(subcategory)}\n**内容标题：** ${title || '（未填写）'}\n**简短描述：** ${description || '（未填写）'}\n**标签：** ${tags.length > 0 ? tags.join(', ') : '（无）'}\n**来源：** ${getSourceFromUrl(url)}\n**提交时间：** ${new Date().toLocaleString('zh-CN')}\n\n---\n请管理员审核此投稿！`;
+                
+                const response = await fetch('https://api.github.com/repos/CNMJH/cnmjh.github.anim-daily/issues', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: issueTitle,
+                        body: issueBody,
+                        labels: ['投稿', '待审核']
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('✅ 投稿成功！已提交到GitHub Issues！');
+                    closeSubmitModal();
+                    return;
+                } else {
+                    const error = await response.json();
+                    alert('❌ 提交GitHub失败：' + (error.message || '未知错误') + '\n\n我们将使用本地保存。');
+                }
+            } catch (e) {
+                console.error('GitHub提交失败:', e);
+                alert('❌ 网络错误，我们将使用本地保存。');
+            }
+        }
+    }
+    
+    // 备用方案：保存到本地
     const submission = {
         id: 'submission_' + Date.now(),
         url: url,
@@ -196,12 +237,24 @@ function handleSubmit(event) {
         status: 'pending'
     };
     
-    // 保存到待审核列表
     pendingSubmissions.push(submission);
     savePendingSubmissions();
     
-    alert('✅ 投稿成功！我们会尽快审核！');
+    alert('✅ 投稿已保存到本地！\n\n您也可以直接访问 GitHub 仓库提交 Issue 来投稿：\nhttps://github.com/CNMJH/cnmjh.github.anim-daily/issues\n\n提交时请加上"投稿"和"待审核"标签！');
     closeSubmitModal();
+}
+
+function getSubcategoryName(subcategory) {
+    const names = {
+        'character': '角色动画',
+        'action': '动作场面',
+        'facial': '表情动画',
+        'creature': '生物动画',
+        'stand': '站立姿势',
+        'action_pose': '动态姿势',
+        'hand': '手部参考'
+    };
+    return names[subcategory] || subcategory;
 }
 
 // 从URL获取来源名称
