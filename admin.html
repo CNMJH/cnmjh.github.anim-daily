@@ -479,13 +479,67 @@
             }
         }
 
-        // 删除举报
+        // 删除举报并从网站删除链接
         async function deleteReport(reportId) {
-            if (!confirm('🗑️ 确定要删除这个举报吗？此操作不可撤销！')) {
+            // 先获取举报信息
+            const report = reports.find(r => r.id == reportId);
+            if (!report) {
+                alert('❌ 找不到该举报！');
+                return;
+            }
+            
+            const workId = report.work_id;
+            const workTitle = report.work_title || '未知';
+            
+            if (!confirm(`🗑️ 确定要删除这个举报并从网站永久删除该链接吗？\n\n链接：${workTitle}\n\n此操作不可撤销！`)) {
                 return;
             }
 
             try {
+                // 1. 先从works-data.json中删除该链接
+                if (githubConfig.token && githubConfig.owner && githubConfig.repo) {
+                    try {
+                        const sha = await getFileSha();
+                        let currentData = await getCurrentWorksData();
+                        
+                        if (Array.isArray(currentData)) {
+                            // 从currentData中删除该work
+                            const originalLength = currentData.length;
+                            currentData = currentData.filter(w => w.id !== workId);
+                            
+                            if (currentData.length === originalLength) {
+                                alert('⚠️ 网站中找不到该链接！\n\n但会继续删除举报！');
+                            } else {
+                                const content = btoa(unescape(encodeURIComponent(JSON.stringify(currentData, null, 2))));
+                                
+                                const updateUrl = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/works-data.json`;
+                                const updateResponse = await fetch(updateUrl, {
+                                    method: 'PUT',
+                                    headers: {
+                                        'Authorization': `token ${githubConfig.token}`,
+                                        'Accept': 'application/vnd.github.v3+json',
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        message: '删除失效链接: ' + workTitle,
+                                        content: content,
+                                        sha: sha,
+                                        branch: githubConfig.branch
+                                    })
+                                });
+                                
+                                if (!updateResponse.ok) {
+                                    throw new Error('从网站删除链接失败');
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error('从网站删除链接失败:', e);
+                        alert('❌ 从网站删除链接失败！\n\n但会继续删除举报！');
+                    }
+                }
+                
+                // 2. 从Supabase删除举报
                 const url = `${SUPABASE_URL}/rest/v1/reports?id=eq.${reportId}`;
                 const response = await fetch(url, {
                     method: 'DELETE',
@@ -497,14 +551,14 @@
                 });
 
                 if (response.ok) {
-                    alert('🗑️ 举报已删除！');
+                    alert('🗑️ 举报已删除，链接已从网站移除！');
                     loadReports();
                 } else {
-                    alert('❌ 删除失败！');
+                    alert('❌ 删除举报失败！');
                 }
             } catch (e) {
                 console.error('删除举报失败:', e);
-                alert('❌ 删除失败！');
+                alert('❌ 删除举报失败！');
             }
         }
 
