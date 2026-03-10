@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>动画每日一刷 - 3D 动画师参考网站</title>
+    <link rel="stylesheet" href="style.css?v=202603091400">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div>
+                    <h1>🎬 动画每日一刷</h1>
+                    <p class="subtitle">3D 动画师每日灵感与 Pose 参考</p>
+                </div>
+                <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌙</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 今日推荐 -->
+    <section class="today-recommend" id="todayRecommend">
+        <div class="container">
+            <div class="recommend-header">
+                <h2>🌟 今日精选推荐</h2>
+                <button class="refresh-btn" onclick="refreshRecommend()">🔄 换一批</button>
+            </div>
+            <div class="recommend-grid" id="recommendGrid">
+                <!-- 推荐内容将通过JS动态加载 -->
+            </div>
+        </div>
+    </section>
+
+    <main class="container">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="搜索作品...">
+            <button onclick="searchWorks()">搜索</button>
+            <button id="toggleFilterBtn" onclick="toggleFilterPanel()">🔍 高级筛选</button>
+            <button class="random-btn" onclick="randomBrowse()">🎲 随机浏览</button>
+            <button class="submit-btn" onclick="openSubmitModal()">📝 投稿</button>
+        </div>
+        
+        <!-- 高级筛选面板 -->
+        <div id="filterPanel" class="filter-panel" style="display:none;">
+            <div class="filter-row">
+                <div class="filter-item">
+                    <label>作者/来源：</label>
+                    <select id="filterSource">
+                        <option value="all">全部</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>排序方式：</label>
+                    <select id="filterSort">
+                        <option value="default">默认</option>
+                        <option value="likes_desc">🔥 热门优先</option>
+                        <option value="date_desc">最新优先</option>
+                        <option value="date_asc">最早优先</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button onclick="applyFilters()">应用筛选</button>
+                <button onclick="resetFilters()">重置</button>
+            </div>
+        </div>
+
+        <div class="categories">
+            <button class="category-btn active" data-category="all">全部</button>
+            <button class="category-btn" data-category="animation">动画作品</button>
+            <button class="category-btn" data-category="pose">Pose 参考</button>
+            <button class="category-btn" id="favoriteBtn" data-category="favorites">❤️ 我的收藏</button>
+            <button class="category-btn" id="historyBtn" data-category="history">📜 浏览历史</button>
+        </div>
+
+        <div class="sub-categories" id="subCategories">
+            <button class="sub-category-btn active" data-subcategory="all">全部</button>
+            <button class="sub-category-btn" data-subcategory="character">角色动画</button>
+            <button class="sub-category-btn" data-subcategory="action">动作场面</button>
+            <button class="sub-category-btn" data-subcategory="facial">表情动画</button>
+            <button class="sub-category-btn" data-subcategory="creature">生物动画</button>
+            <button class="sub-category-btn" data-subcategory="stand">站立姿势</button>
+            <button class="sub-category-btn" data-subcategory="action_pose">动态姿势</button>
+            <button class="sub-category-btn" data-subcategory="hand">手部参考</button>
+        </div>
+
+        <!-- 收藏夹选择器 -->
+        <div class="folders-section" id="foldersSection" style="display:none;">
+            <div class="folders-title">📁 收藏夹</div>
+            <div class="folders-list" id="foldersList">
+                <!-- 收藏夹将通过JS动态加载 -->
+            </div>
+            <div class="folder-actions">
+                <button class="new-folder-btn" onclick="createNewFolder()">+ 新建收藏夹</button>
+            </div>
+        </div>
+
+        <!-- 标签筛选 -->
+        <div class="tags-section" id="tagsSection" style="display:none;">
+            <div class="tags-title">🏷️ 热门标签</div>
+            <div class="tags-list" id="tagsList">
+                <!-- 标签将通过JS动态加载 -->
+            </div>
+        </div>
+
+        <!-- 历史记录管理 -->
+        <div class="history-section" id="historySection" style="display:none;">
+            <div class="history-header">
+                <div class="history-title">📜 浏览历史</div>
+                <div class="history-actions">
+                    <button class="clear-history-btn" onclick="clearHistory()">🗑️ 清空历史</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <span id="totalCount">共 0 个作品</span>
+            <span id="updateTime">最后更新：--</span>
+        </div>
+
+        <div id="works-container" class="works-grid">
+            <!-- 作品卡片将通过 JS 动态加载 -->
+        </div>
+
+        <div id="pagination" class="pagination">
+            <!-- 分页按钮将通过 JS 动态生成 -->
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <p>⏳ 加载中...</p>
+        </div>
+    </main>
+
+    <!-- 投稿弹窗 -->
+    <div id="submitModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📝 投稿推荐</h2>
+                <button class="modal-close" onclick="closeSubmitModal()">×</button>
+            </div>
+            <form id="submitForm" onsubmit="handleSubmit(event)">
+                <div class="form-group">
+                    <label>内容链接 *</label>
+                    <input type="url" id="submitUrl" placeholder="请输入B站/站酷/花瓣链接" required>
+                    <small class="form-hint">支持：bilibili.com、zcool.com.cn、huaban.com</small>
+                </div>
+                <div class="form-group">
+                    <label>内容分类 *</label>
+                    <select id="submitType" required>
+                        <option value="">请选择分类</option>
+                        <option value="animation">动画作品</option>
+                        <option value="pose">Pose 参考</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>子分类 *</label>
+                    <select id="submitSubcategory" required>
+                        <option value="">请先选择内容分类</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>内容标题</label>
+                    <input type="text" id="submitTitle" placeholder="自动抓取，也可手动填写">
+                </div>
+                <div class="form-group">
+                    <label>简短描述</label>
+                    <textarea id="submitDescription" placeholder="100字以内，简单介绍这个内容" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>标签（用空格分隔，最多5个）</label>
+                    <input type="text" id="submitTags" placeholder="例如：Maya 角色动画 走路循环">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeSubmitModal()">取消</button>
+                    <button type="submit" class="btn-primary">提交投稿</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2024 动画每日一刷 | 为 3D 动画师打造</p>
+        </div>
+    </footer>
+
+    <script src="app.js?v=202603091400"></script>
+</body>
+</html>
