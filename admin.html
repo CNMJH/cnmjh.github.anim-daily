@@ -473,10 +473,20 @@
         };
 
         // 加载卡片样式配置
-        function loadCardStyle() {
+        async function loadCardStyle() {
             try {
-                const saved = localStorage.getItem('animDailyCardStyle');
-                const config = saved ? JSON.parse(saved) : defaultCardStyle;
+                let config = defaultCardStyle;
+                
+                // 先尝试从GitHub加载
+                try {
+                    const response = await fetch('style-config.json?t=' + Date.now());
+                    if (response.ok) {
+                        config = await response.json();
+                        console.log('✅ 从GitHub加载样式配置成功');
+                    }
+                } catch (e) {
+                    console.warn('⚠️ 从GitHub加载样式配置失败，使用默认值:', e);
+                }
                 
                 // 设置滑条值
                 document.getElementById('imageHeightSlider').value = config.imageHeight;
@@ -518,8 +528,8 @@
             document.getElementById('contentHeightSlider').style.opacity = autoContentHeight ? '0.5' : '1';
         }
 
-        // 保存卡片样式配置
-        function saveCardStyle() {
+        // 保存卡片样式配置到GitHub
+        async function saveCardStyle() {
             const config = {
                 imageHeight: parseInt(document.getElementById('imageHeightSlider').value),
                 contentHeight: parseInt(document.getElementById('contentHeightSlider').value),
@@ -528,27 +538,120 @@
                 maxRows: parseInt(document.getElementById('maxRowsSlider').value)
             };
             
-            localStorage.setItem('animDailyCardStyle', JSON.stringify(config));
-            alert('✅ 卡片样式配置已保存！\n\n请刷新网站查看效果！');
+            // 检查GitHub配置
+            if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo) {
+                alert('❌ 请先配置GitHub！点击右上角"⚙️ 配置GitHub"');
+                return;
+            }
+            
+            try {
+                console.log('正在保存样式配置到GitHub...');
+                
+                // 保存到GitHub
+                const sha = await getStyleConfigFileSha();
+                const content = btoa(unescape(encodeURIComponent(JSON.stringify(config, null, 2))));
+                const updateUrl = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/style-config.json`;
+                
+                const response = await fetch(updateUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${githubConfig.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: '更新卡片样式配置',
+                        content: content,
+                        sha: sha,
+                        branch: githubConfig.branch
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('✅ 卡片样式配置已保存到GitHub！\n\n所有用户刷新网站即可看到效果！');
+                } else {
+                    throw new Error('保存失败');
+                }
+            } catch (e) {
+                console.error('保存样式配置失败:', e);
+                alert('❌ 保存到GitHub失败！\n\n请检查GitHub配置！');
+            }
+        }
+
+        // 获取style-config.json的SHA
+        async function getStyleConfigFileSha() {
+            const url = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/style-config.json?ref=${githubConfig.branch}`;
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `token ${githubConfig.token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (!response.ok) {
+                // 如果文件不存在，返回null（会创建新文件）
+                if (response.status === 404) {
+                    return null;
+                }
+                throw new Error('获取文件信息失败');
+            }
+            
+            const data = await response.json();
+            return data.sha;
         }
 
         // 重置卡片样式配置
-        function resetCardStyle() {
+        async function resetCardStyle() {
             if (!confirm('确定要重置为默认样式吗？')) {
                 return;
             }
             
-            localStorage.removeItem('animDailyCardStyle');
+            // 检查GitHub配置
+            if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo) {
+                alert('❌ 请先配置GitHub！点击右上角"⚙️ 配置GitHub"');
+                return;
+            }
             
-            // 重置滑条值
-            document.getElementById('imageHeightSlider').value = defaultCardStyle.imageHeight;
-            document.getElementById('contentHeightSlider').value = defaultCardStyle.contentHeight;
-            document.getElementById('autoContentHeight').checked = defaultCardStyle.autoContentHeight;
-            document.getElementById('columnsSlider').value = defaultCardStyle.columns;
-            document.getElementById('maxRowsSlider').value = defaultCardStyle.maxRows;
-            
-            updateSliderValues();
-            alert('✅ 已重置为默认样式！\n\n请刷新网站查看效果！');
+            try {
+                console.log('正在重置样式配置到GitHub...');
+                
+                // 保存默认配置到GitHub
+                const sha = await getStyleConfigFileSha();
+                const content = btoa(unescape(encodeURIComponent(JSON.stringify(defaultCardStyle, null, 2))));
+                const updateUrl = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/style-config.json`;
+                
+                const response = await fetch(updateUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${githubConfig.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: '重置卡片样式为默认',
+                        content: content,
+                        sha: sha,
+                        branch: githubConfig.branch
+                    })
+                });
+                
+                if (response.ok) {
+                    // 重置滑条值
+                    document.getElementById('imageHeightSlider').value = defaultCardStyle.imageHeight;
+                    document.getElementById('contentHeightSlider').value = defaultCardStyle.contentHeight;
+                    document.getElementById('autoContentHeight').checked = defaultCardStyle.autoContentHeight;
+                    document.getElementById('columnsSlider').value = defaultCardStyle.columns;
+                    document.getElementById('maxRowsSlider').value = defaultCardStyle.maxRows;
+                    
+                    updateSliderValues();
+                    alert('✅ 已重置为默认样式并保存到GitHub！\n\n所有用户刷新网站即可看到效果！');
+                } else {
+                    throw new Error('重置失败');
+                }
+            } catch (e) {
+                console.error('重置样式配置失败:', e);
+                alert('❌ 重置到GitHub失败！\n\n请检查GitHub配置！');
+            }
         }
 
         // 加载内容用于管理

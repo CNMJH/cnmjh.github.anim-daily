@@ -14,12 +14,19 @@ const defaultCardStyle = {
 
 let cardStyleConfig = { ...defaultCardStyle };
 
-// 加载卡片样式配置
-function loadCardStyleConfig() {
+// 加载卡片样式配置（从GitHub）
+async function loadCardStyleConfig() {
     try {
-        const saved = localStorage.getItem('animDailyCardStyle');
-        if (saved) {
-            cardStyleConfig = { ...defaultCardStyle, ...JSON.parse(saved) };
+        // 先尝试从GitHub加载
+        try {
+            const response = await fetch('style-config.json?t=' + Date.now());
+            if (response.ok) {
+                const githubConfig = await response.json();
+                cardStyleConfig = { ...defaultCardStyle, ...githubConfig };
+                console.log('✅ 从GitHub加载样式配置成功');
+            }
+        } catch (e) {
+            console.warn('⚠️ 从GitHub加载样式配置失败，使用默认值:', e);
         }
     } catch (e) {
         console.error('加载卡片样式配置失败:', e);
@@ -1443,9 +1450,9 @@ document.getElementById('searchInput').addEventListener('keypress', function(e) 
 });
 
 // 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     loadTheme();
-    loadCardStyleConfig(); // 加载卡片样式配置
+    await loadCardStyleConfig(); // 加载卡片样式配置（从GitHub）
     applyCardStyleConfig(); // 应用卡片样式配置
     loadFavorites();
     loadHistory();

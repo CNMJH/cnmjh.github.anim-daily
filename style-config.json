@@ -1,0 +1,7 @@
+{
+  "imageHeight": 240,
+  "contentHeight": 200,
+  "autoContentHeight": true,
+  "columns": 3,
+  "maxRows": 3
+}
