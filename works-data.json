@@ -46,5 +46,22 @@
     "date": "2026-03-10",
     "image": "",
     "likes": 0
+  },
+  {
+    "id": "work_1773156164772",
+    "title": "【恶意不息】动画师制作展示",
+    "type": "animation",
+    "subcategory": "character",
+    "url": "https://www.bilibili.com/video/BV1LqfSB7EBu/?share_source=copy_web&vd_source=0623765ede2af532f049f4f5d00b56ca",
+    "source": "B站",
+    "artist": "待确认",
+    "date": "2026-03-10",
+    "image": "",
+    "description": "",
+    "tags": [
+      "角色动画",
+      "游戏动作"
+    ],
+    "likes": 0
   }
 ]
