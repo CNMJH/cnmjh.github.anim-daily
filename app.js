@@ -919,35 +919,69 @@ function resetFilters() {
     renderWorks(filterWorksData());
 }
 
-// 从 JSON 文件加载作品
+// 从 GitHub 加载作品数据（优先），失败则回退到本地
 async function loadWorks() {
     const loading = document.getElementById('loading');
     loading.style.display = 'block';
     loading.textContent = '🎬 正在加载动画参考资源...';
     
+    // GitHub 仓库配置
+    const githubConfig = {
+        owner: 'CNMJH',
+        repo: 'cnmjh.github.anim-daily',
+        branch: 'main'
+    };
+    
+    let loadSuccess = false;
+    
+    // 1. 优先尝试从 GitHub 加载
     try {
-        const timestamp = new Date().getTime();
-        const response = await fetch('works-data.json?t=' + timestamp);
+        const githubUrl = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/works-data.json?ref=${githubConfig.branch}`;
+        const response = await fetch(githubUrl, {
+            headers: {
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
         
         if (response.ok) {
-            worksData = await response.json();
-            console.log('✅ 成功加载真实作品数据:', worksData.length, '个');
+            const data = await response.json();
+            const content = decodeURIComponent(escape(atob(data.content)));
+            worksData = JSON.parse(content);
+            console.log('✅ 成功从 GitHub 加载作品数据:', worksData.length, '个');
+            loadSuccess = true;
         } else {
-            console.error('❌ 加载失败，状态码:', response.status);
-            worksData = [];
+            console.warn('⚠️ 从 GitHub 加载失败，尝试本地加载');
         }
     } catch (error) {
-        console.error('❌ 加载错误:', error);
-        // 提示用户启动服务器
+        console.warn('⚠️ 从 GitHub 加载出错，尝试本地加载:', error);
+    }
+    
+    // 2. 如果 GitHub 加载失败，回退到本地加载
+    if (!loadSuccess) {
+        try {
+            const timestamp = new Date().getTime();
+            const response = await fetch('works-data.json?t=' + timestamp);
+            
+            if (response.ok) {
+                worksData = await response.json();
+                console.log('✅ 成功从本地加载作品数据:', worksData.length, '个');
+                loadSuccess = true;
+            } else {
+                console.error('❌ 本地加载失败，状态码:', response.status);
+                worksData = [];
+            }
+        } catch (error) {
+            console.error('❌ 本地加载错误:', error);
+        }
+    }
+    
+    // 3. 如果都失败了，显示错误提示
+    if (!loadSuccess || worksData.length === 0) {
+        loading.style.display = 'none';
         document.getElementById('works-container').innerHTML = 
-            '<p style="text-align:center;color:rgba(255,255,255,0.8);padding:60px;grid-column:1/-1;">' +
-            '⚠️ 本地打开看不到内容<br><br>' +
-            '请使用启动脚本 <strong>start_website.sh</strong> 或 <strong>启动网站.bat</strong> 启动服务器<br>' +
-            '然后访问 <strong>http://127.0.0.1:8890</strong>' +
-            '</p>';
+            '<p style="text-align:center;color:rgba(255,255,255,0.6);padding:60px;grid-column:1/-1;">暂无作品，请稍后再试</p>';
         document.getElementById('totalCount').textContent = '共 0 个作品';
         document.getElementById('pagination').style.display = 'none';
-        loading.style.display = 'none';
         return;
     }
     
