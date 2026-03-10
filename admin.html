@@ -215,9 +215,9 @@
             </div>
         </div>
 
-        <div class="nav-tabs" style="margin-bottom: 20px;">
-            <button class="nav-tab active" onclick="switchAdminTab('submissions')">📋 投稿审核</button>
-            <button class="nav-tab" onclick="switchAdminTab('reports')">⚠️ 举报管理</button>
+        <div class="nav-tabs" style="display: flex; gap: 5px; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; flex-wrap: wrap;">
+            <button class="nav-tab active" style="padding: 12px 24px; background: #fff; border: none; border-bottom: 2px solid #3b82f6; color: #3b82f6; cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; border-radius: 8px 8px 0 0;" onclick="switchAdminTab('submissions')">📋 投稿审核</button>
+            <button class="nav-tab" style="padding: 12px 24px; background: #f8fafc; border: none; border-bottom: 2px solid transparent; color: #64748b; cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; border-radius: 8px 8px 0 0;" onclick="switchAdminTab('reports')">⚠️ 举报管理</button>
         </div>
 
         <div id="submissions-section">
@@ -246,6 +246,10 @@
                 <div class="stat-card">
                     <h3>待处理举报</h3>
                     <div class="number" id="reportCount">0</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                    <h3>已处理举报</h3>
+                    <div class="number" id="resolvedReportCount">0</div>
                 </div>
             </div>
             <h2 class="section-title">⚠️ 举报管理</h2>
@@ -317,8 +321,9 @@
         // 从Supabase加载举报
         async function loadReports() {
             try {
-                const url = `${SUPABASE_URL}/rest/v1/reports?status=eq.pending&order=created_at.desc`;
-                const response = await fetch(url, {
+                // 加载待处理举报
+                const pendingUrl = `${SUPABASE_URL}/rest/v1/reports?status=eq.pending&order=created_at.desc`;
+                const pendingResponse = await fetch(pendingUrl, {
                     headers: {
                         'apikey': SUPABASE_ANON_KEY,
                         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
@@ -326,12 +331,29 @@
                     }
                 });
 
-                if (!response.ok) {
+                // 加载已处理举报
+                const resolvedUrl = `${SUPABASE_URL}/rest/v1/reports?status=eq.resolved&order=created_at.desc`;
+                const resolvedResponse = await fetch(resolvedUrl, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!pendingResponse.ok || !resolvedResponse.ok) {
                     throw new Error('获取举报失败');
                 }
 
-                reports = await response.json();
+                const pendingReports = await pendingResponse.json();
+                const resolvedReports = await resolvedResponse.json();
+                
+                reports = [...pendingReports, ...resolvedReports];
                 renderReports();
+                
+                // 更新统计
+                document.getElementById('reportCount').textContent = pendingReports.length;
+                document.getElementById('resolvedReportCount').textContent = resolvedReports.length;
             } catch (e) {
                 console.error('❌ 加载举报失败:', e);
                 document.getElementById('reportsList').innerHTML = `
@@ -342,19 +364,19 @@
                     </div>
                 `;
                 document.getElementById('reportCount').textContent = '0';
+                document.getElementById('resolvedReportCount').textContent = '0';
             }
         }
 
         // 渲染举报列表
         function renderReports() {
             const container = document.getElementById('reportsList');
-            document.getElementById('reportCount').textContent = reports.length;
 
             if (!reports || reports.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="icon">✅</div>
-                        <h3>暂无待处理举报</h3>
+                        <h3>暂无举报</h3>
                         <p>所有举报都已处理完毕！</p>
                     </div>
                 `;
@@ -362,29 +384,37 @@
             }
 
             container.innerHTML = reports.map(report => {
+                const isPending = report.status === 'pending';
+                const safeUrl = report.work_url ? report.work_url.replace(/'/g, "\\'") : '';
+                
                 return `
-                    <div class="submission-card">
+                    <div class="submission-card" style="opacity: ${isPending ? 1 : 0.6};">
                         <div class="submission-header">
                             <div class="submission-info">
                                 <div class="submission-title">${escapeHtml(report.work_title || '无标题')}</div>
-                                <div class="submission-url">${escapeHtml(report.work_url || '无链接')}</div>
+                                <div class="submission-url" style="cursor: pointer; color: #3b82f6;" onclick="window.open('${safeUrl}', '_blank')">${escapeHtml(report.work_url || '无链接')}</div>
                                 <div class="submission-meta">
                                     <span class="meta-tag">🆔 ${escapeHtml(report.work_id || '未知')}</span>
                                     <span class="meta-tag">🕐 ${formatDate(report.created_at)}</span>
+                                    ${!isPending ? '<span class="meta-tag" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: #fff;">✅ 已处理</span>' : ''}
                                 </div>
                             </div>
                         </div>
+                        ${isPending ? `
                         <div class="submission-actions">
-                            <button class="action-btn view-btn" onclick="viewLink('${escapeHtml(report.work_url || '')}')">🔗 打开链接</button>
-                            <button class="action-btn approve-btn" onclick="handleReport('${report.id}')">✅ 已处理</button>
+                            <button class="action-btn view-btn" onclick="window.open('${safeUrl}', '_blank')">🔗 打开链接</button>
+                            <button class="action-btn approve-btn" onclick="resolveReport('${report.id}')">✅ 已处理</button>
+                            <button class="action-btn" style="background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;" onclick="ignoreReport('${report.id}')">😐 忽略</button>
+                            <button class="action-btn delete-btn" onclick="deleteReport('${report.id}')">🗑️ 删除</button>
                         </div>
+                        ` : ''}
                     </div>
                 `;
             }).join('');
         }
 
-        // 处理举报
-        async function handleReport(reportId) {
+        // 标记举报为已处理
+        async function resolveReport(reportId) {
             if (!confirm('✅ 确定要标记这个举报为已处理吗？')) {
                 return;
             }
@@ -413,6 +443,68 @@
             } catch (e) {
                 console.error('处理举报失败:', e);
                 alert('❌ 处理失败！');
+            }
+        }
+
+        // 忽略举报
+        async function ignoreReport(reportId) {
+            if (!confirm('😐 确定要忽略这个举报吗？')) {
+                return;
+            }
+
+            try {
+                const url = `${SUPABASE_URL}/rest/v1/reports?id=eq.${reportId}`;
+                const response = await fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        status: 'ignored'
+                    })
+                });
+
+                if (response.ok) {
+                    alert('😐 已忽略这个举报！');
+                    loadReports();
+                } else {
+                    alert('❌ 操作失败！');
+                }
+            } catch (e) {
+                console.error('忽略举报失败:', e);
+                alert('❌ 操作失败！');
+            }
+        }
+
+        // 删除举报
+        async function deleteReport(reportId) {
+            if (!confirm('🗑️ 确定要删除这个举报吗？此操作不可撤销！')) {
+                return;
+            }
+
+            try {
+                const url = `${SUPABASE_URL}/rest/v1/reports?id=eq.${reportId}`;
+                const response = await fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Prefer': 'return=minimal'
+                    }
+                });
+
+                if (response.ok) {
+                    alert('🗑️ 举报已删除！');
+                    loadReports();
+                } else {
+                    alert('❌ 删除失败！');
+                }
+            } catch (e) {
+                console.error('删除举报失败:', e);
+                alert('❌ 删除失败！');
             }
         }
 
