@@ -1349,7 +1349,7 @@ function renderWorks(works) {
              ondragstart="handleDragStart(event, '${workId.replace(/'/g, "\\'")}')"
              style="cursor:pointer">
             <div class="work-card-image" style="pointer-events: none;">
-                <img src="${escapeHtml(item.image && item.image.trim() !== '' ? item.image : 'https://via.placeholder.com/400x240/1a1a2e/e94560')}" alt="${escapeHtml(item.title)}" draggable="false">
+                <img src="${escapeHtml(item.image && item.image.trim() !== '' ? item.image : 'https://via.placeholder.com/400x240/1a1a2e/1a1a2e')}" alt="${escapeHtml(item.title)}" draggable="false">
                 <span class="work-type-tag ${item.type}">${typeText}</span>
                 <button class="favorite-btn ${favClass}" onclick="toggleFavorite('${workId.replace(/'/g, "\\'")}', event)" title="收藏" style="pointer-events: auto;">${favIcon}</button>
             </div>
