@@ -273,6 +273,27 @@ body.light-theme .subtitle {
     color: rgba(255,255,255,0.95);
 }
 
+body.light-theme .search-box input {
+    color: #1e293b;
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+body.light-theme .search-box input::placeholder {
+    color: #94a3b8;
+}
+
+body.light-theme .search-box input:focus {
+    border-color: #3b82f6;
+    background: #ffffff;
+}
+
+body.light-theme footer {
+    color: #64748b;
+    border-color: #e2e8f0;
+    background: #ffffff;
+}
+
 body.light-theme .category-btn {
     color: #64748b;
     background: #f8fafc;
