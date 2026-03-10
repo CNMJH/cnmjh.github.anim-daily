@@ -786,6 +786,16 @@ header h1 {
     min-height: 60px;
 }
 
+.form-group select option {
+    background: #1a1a2e;
+    color: #fff;
+}
+
+body.light-theme .form-group select option {
+    background: #ffffff;
+    color: #1e293b;
+}
+
 .form-hint {
     color: rgba(255,255,255,0.5);
     font-size: 0.8rem;
