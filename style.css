@@ -295,7 +295,10 @@ body.light-theme .favorite-btn:hover {
 }
 
 body.light-theme .favorite-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: transparent;
     color: #fff;
+    box-shadow: 0 2px 10px rgba(102,126,234,0.3);
 }
 
 body.light-theme .modal-content {
@@ -362,7 +365,10 @@ body.light-theme .page-btn:hover:not(.disabled) {
 }
 
 body.light-theme .page-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: transparent;
     color: #fff;
+    box-shadow: 0 2px 10px rgba(102,126,234,0.3);
 }
 
 body.light-theme .page-ellipsis {
@@ -448,7 +454,10 @@ body.light-theme .tag-btn:hover {
 }
 
 body.light-theme .tag-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: transparent;
     color: #fff;
+    box-shadow: 0 2px 10px rgba(102,126,234,0.3);
 }
 
 body.light-theme .folder-btn {
@@ -464,7 +473,10 @@ body.light-theme .folder-btn:hover {
 }
 
 body.light-theme .folder-btn.active {
+    background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+    border-color: transparent;
     color: #fff;
+    box-shadow: 0 2px 10px rgba(233,69,96,0.3);
 }
 
 body.light-theme .new-folder-btn {
