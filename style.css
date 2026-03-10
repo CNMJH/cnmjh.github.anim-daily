@@ -1109,8 +1109,9 @@ body.light-theme .form-group select option {
 
 .tags-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
+    gap: 10px;
     margin-bottom: 12px;
 }
 
