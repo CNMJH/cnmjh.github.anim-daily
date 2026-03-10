@@ -1267,13 +1267,11 @@ function renderWorks(works) {
             <div class="work-card-image">
                 <img src="${escapeHtml(item.image && item.image.trim() !== '' ? item.image : 'https://via.placeholder.com/400x240/1a1a2e/e94560?text=Animation+Art')}" alt="${escapeHtml(item.title)}">
                 <span class="work-type-tag ${item.type}">${typeText}</span>
-                <span class="source-tag">${escapeHtml(item.source)}</span>
                 <button class="favorite-btn ${favClass}" onclick="toggleFavorite('${workId.replace(/'/g, "\\'")}', event)" title="收藏">${favIcon}</button>
             </div>
             <div class="work-content">
                 <div class="work-tags">
                     <span class="work-category">${escapeHtml(category)}</span>
-                    <span class="work-source">${escapeHtml(item.artist)}</span>
                 </div>
                 <h3 class="work-title">${escapeHtml(item.title)}</h3>
                 <p class="work-description">${escapeHtml(item.description)}</p>
@@ -1283,7 +1281,6 @@ function renderWorks(works) {
                 </div>
                 ` : ''}
                 <div class="work-meta">
-                    <span class="work-artist">👤 ${escapeHtml(item.artist)}</span>
                     <div class="work-actions">
                         <button class="like-btn" onclick="toggleLike('${workId.replace(/'/g, "\\'")}', event)" title="点赞">
                             <span class="like-icon">${isLikedValue ? '❤️' : '🤍'}</span>
