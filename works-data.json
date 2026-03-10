@@ -25,10 +25,26 @@
     "artist": "待确认",
     "date": "2026-03-10",
     "image": "",
-    "description": "描述",
+    "description": "",
     "tags": [
       "角色动画"
     ],
+    "likes": 0
+  },
+  {
+    "id": "work_1773155944172",
+    "url": "https://www.bilibili.com/video/BV1wG7Bz6Eky/?share_source=copy_web&vd_source=0623765ede2af532f049f4f5d00b56ca",
+    "title": "《恶意不息》-法杖动画技能展示",
+    "type": "animation",
+    "subcategory": "character",
+    "description": "法杖",
+    "tags": [
+      "角色动画"
+    ],
+    "source": "B站",
+    "artist": "待确认",
+    "date": "2026-03-10",
+    "image": "",
     "likes": 0
   }
 ]
