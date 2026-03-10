@@ -216,7 +216,10 @@ body.light-theme .category-btn:hover {
 }
 
 body.light-theme .category-btn.active {
-    color: #1e293b;
+    background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(233,69,96,0.4);
 }
 
 body.light-theme .sub-category-btn {
@@ -519,6 +522,37 @@ body.light-theme .folders-title {
 
 body.light-theme .history-title {
     color: #1e293b;
+}
+
+body.light-theme .filter-panel {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    backdrop-filter: none;
+}
+
+body.light-theme .filter-item label {
+    color: #1e293b;
+}
+
+body.light-theme .filter-item select {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    color: #1e293b;
+}
+
+body.light-theme .filter-item select option {
+    background: #ffffff;
+    color: #1e293b;
+}
+
+body.light-theme .filter-actions button:last-child {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    color: #64748b;
+}
+
+body.light-theme .filter-actions button:last-child:hover {
+    background: #e2e8f0;
 }
 
 /* 我的收藏按钮 */
