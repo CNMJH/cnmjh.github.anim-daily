@@ -1227,6 +1227,38 @@ body.light-theme .form-group select option {
     transform: scale(1.02);
 }
 
+/* 收藏夹拖拽排序样式 */
+.folder-item {
+    transition: all 0.2s ease;
+}
+
+.folder-item[draggable="true"] {
+    cursor: grab;
+}
+
+.folder-item[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+.folder-drag-handle {
+    user-select: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.folder-drag-handle:hover {
+    color: rgba(255,255,255,0.8);
+}
+
+/* 白天主题的拖拽手柄样式 */
+body.light-theme .folder-drag-handle {
+    color: #94a3b8;
+}
+
+body.light-theme .folder-drag-handle:hover {
+    color: #64748b;
+}
+
 .tag-btn.active {
     background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
     border-color: transparent;

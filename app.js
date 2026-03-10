@@ -538,13 +538,23 @@ function renderFolders() {
     foldersSection.style.display = 'block';
     
     let html = '';
-    favorites.folders.forEach(folder => {
+    favorites.folders.forEach((folder, index) => {
         const isActive = folder.id === favorites.currentFolder;
         const count = folder.works.length;
         const isDefault = folder.id === 'all';
         
         html += `
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <div class="folder-item" 
+                 data-folder-id="${folder.id}" 
+                 data-index="${index}"
+                 draggable="${!isDefault}"
+                 ondragstart="handleFolderDragStart(event, '${folder.id}', ${index})"
+                 ondragend="handleFolderDragEnd(event)"
+                 ondragover="handleFolderDragOver(event)"
+                 ondragleave="handleFolderDragLeave(event)"
+                 ondrop="handleFolderDrop(event, ${index})"
+                 style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; transition: all 0.2s;">
+                ${!isDefault ? `<span class="folder-drag-handle" style="cursor: grab; padding: 0 5px; color: rgba(255,255,255,0.4);">⋮⋮</span>` : `<span style="width: 26px;"></span>`}
                 <button class="folder-btn ${isActive ? 'active' : ''}" 
                         onclick="switchFolder('${folder.id}')" 
                         ondragover="handleDragOver(event)" 
@@ -1527,6 +1537,85 @@ document.addEventListener('dragend', function(event) {
     });
     draggedWorkId = null;
 });
+
+// ========== 收藏夹拖拽排序功能 ==========
+let draggedFolderId = null;
+let draggedFolderIndex = -1;
+
+// 开始拖拽收藏夹
+function handleFolderDragStart(event, folderId, index) {
+    draggedFolderId = folderId;
+    draggedFolderIndex = index;
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', folderId);
+    
+    // 添加拖拽样式
+    event.currentTarget.style.opacity = '0.5';
+    event.currentTarget.style.transform = 'scale(1.02)';
+}
+
+// 结束拖拽收藏夹
+function handleFolderDragEnd(event) {
+    // 恢复所有收藏夹项的样式
+    document.querySelectorAll('.folder-item').forEach(item => {
+        item.style.opacity = '1';
+        item.style.transform = 'scale(1)';
+        item.style.background = '';
+    });
+    
+    draggedFolderId = null;
+    draggedFolderIndex = -1;
+}
+
+// 拖拽经过收藏夹项
+function handleFolderDragOver(event) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    
+    const folderItem = event.currentTarget;
+    folderItem.style.background = 'rgba(59, 130, 246, 0.15)';
+}
+
+// 拖拽离开收藏夹项
+function handleFolderDragLeave(event) {
+    const folderItem = event.currentTarget;
+    folderItem.style.background = '';
+}
+
+// 放置到收藏夹项
+function handleFolderDrop(event, targetIndex) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    if (draggedFolderId === null || draggedFolderIndex === -1) return;
+    if (draggedFolderIndex === targetIndex) return;
+    
+    // 不允许拖拽"全部收藏"
+    if (draggedFolderId === 'all') return;
+    
+    // 移动收藏夹
+    const draggedFolder = favorites.folders[draggedFolderIndex];
+    favorites.folders.splice(draggedFolderIndex, 1);
+    
+    // 确保"全部收藏"始终在第一位
+    let insertIndex = targetIndex;
+    if (insertIndex === 0) {
+        insertIndex = 1;
+    }
+    
+    favorites.folders.splice(insertIndex, 0, draggedFolder);
+    
+    // 保存并刷新
+    saveFavorites();
+    renderFolders();
+    
+    // 恢复样式
+    document.querySelectorAll('.folder-item').forEach(item => {
+        item.style.opacity = '1';
+        item.style.transform = 'scale(1)';
+        item.style.background = '';
+    });
+}
 
 // ========== 收藏夹导出/导入功能 ==========
 
