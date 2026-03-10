@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理员后台 - 动画每日一刷</title>
-    <link rel="stylesheet" href="style.css?v=202603091400">
+    <link rel="stylesheet" href="style.css?v=202603101730">
     <style>
         body {
             padding: 20px;
@@ -207,7 +207,10 @@
     <div class="admin-container">
         <div class="admin-header">
             <h1>🎛️ 管理员后台</h1>
-            <button class="back-btn" onclick="goBack()">← 返回网站</button>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="back-btn" onclick="openTokenConfig()">⚙️ 配置GitHub</button>
+                <button class="back-btn" onclick="goBack()">← 返回网站</button>
+            </div>
         </div>
 
         <div class="stats-cards">
@@ -231,8 +234,172 @@
         </div>
     </div>
 
+    <!-- GitHub Token 配置弹窗 -->
+    <div id="tokenModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ 配置GitHub</h2>
+                <button class="modal-close" onclick="closeTokenModal()">×</button>
+            </div>
+            <form id="tokenForm" onsubmit="saveTokenConfig(event)">
+                <div class="form-group">
+                    <label>GitHub Personal Access Token *</label>
+                    <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxx" required>
+                    <small class="form-hint">需要有 repo 权限，Token 只会保存在您的本地浏览器</small>
+                </div>
+                <div class="form-group">
+                    <label>仓库所有者 *</label>
+                    <input type="text" id="repoOwner" placeholder="例如：CNMJH" required>
+                </div>
+                <div class="form-group">
+                    <label>仓库名称 *</label>
+                    <input type="text" id="repoName" placeholder="例如：cnmjh.github.anim-daily" required>
+                </div>
+                <div class="form-group">
+                    <label>分支 *</label>
+                    <input type="text" id="repoBranch" value="main" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeTokenModal()">取消</button>
+                    <button type="submit" class="btn-primary">保存配置</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
     <script>
         let pendingSubmissions = [];
+        let githubConfig = {
+            token: '',
+            owner: '',
+            repo: '',
+            branch: 'main'
+        };
+
+        function loadGithubConfig() {
+            try {
+                const saved = localStorage.getItem('animDailyGithubConfig');
+                if (saved) {
+                    githubConfig = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.error('❌ 加载GitHub配置失败:', e);
+            }
+        }
+
+        function saveGithubConfig() {
+            try {
+                localStorage.setItem('animDailyGithubConfig', JSON.stringify(githubConfig));
+            } catch (e) {
+                console.error('❌ 保存GitHub配置失败:', e);
+            }
+        }
+
+        function openTokenConfig() {
+            document.getElementById('tokenModal').style.display = 'flex';
+            document.getElementById('githubToken').value = githubConfig.token || '';
+            document.getElementById('repoOwner').value = githubConfig.owner || '';
+            document.getElementById('repoName').value = githubConfig.repo || '';
+            document.getElementById('repoBranch').value = githubConfig.branch || 'main';
+        }
+
+        function closeTokenModal() {
+            document.getElementById('tokenModal').style.display = 'none';
+        }
+
+        function saveTokenConfig(event) {
+            event.preventDefault();
+            githubConfig.token = document.getElementById('githubToken').value;
+            githubConfig.owner = document.getElementById('repoOwner').value;
+            githubConfig.repo = document.getElementById('repoName').value;
+            githubConfig.branch = document.getElementById('repoBranch').value;
+            saveGithubConfig();
+            alert('✅ GitHub配置已保存！');
+            closeTokenModal();
+        }
+
+        async function getFileSha() {
+            const url = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/works-data.json?ref=${githubConfig.branch}`;
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `token ${githubConfig.token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('获取文件信息失败');
+            }
+            
+            const data = await response.json();
+            return data.sha;
+        }
+
+        async function getCurrentWorksData() {
+            const url = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/works-data.json?ref=${githubConfig.branch}`;
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `token ${githubConfig.token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('获取当前内容失败');
+            }
+            
+            const data = await response.json();
+            const content = atob(data.content);
+            return JSON.parse(content);
+        }
+
+        async function updateGithubWorksData(newWork) {
+            if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo) {
+                alert('❌ 请先配置GitHub！点击右上角"⚙️ 配置GitHub"');
+                return false;
+            }
+
+            try {
+                const sha = await getFileSha();
+                let currentData = await getCurrentWorksData();
+                
+                if (!Array.isArray(currentData)) {
+                    currentData = [];
+                }
+                
+                currentData.push(newWork);
+                
+                const content = btoa(unescape(encodeURIComponent(JSON.stringify(currentData, null, 2))));
+                
+                const url = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/works-data.json`;
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${githubConfig.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: '通过用户投稿: ' + newWork.title,
+                        content: content,
+                        sha: sha,
+                        branch: githubConfig.branch
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || '更新失败');
+                }
+
+                return true;
+            } catch (e) {
+                console.error('❌ GitHub更新失败:', e);
+                alert('❌ 更新GitHub失败: ' + e.message + '\n\n请检查Token和配置是否正确！');
+                return false;
+            }
+        }
 
         function loadPendingSubmissions() {
             try {
@@ -299,10 +466,6 @@
                         <button class="action-btn approve-btn" onclick="approveSubmission('${submission.id}')">✅ 通过</button>
                         <button class="action-btn reject-btn" onclick="rejectSubmission('${submission.id}')">❌ 拒绝</button>
                     </div>
-                    <div id="json-${submission.id}" style="display:none;">
-                        <div class="json-output" id="json-output-${submission.id}"></div>
-                        <button class="copy-btn" onclick="copyJson('${submission.id}')">📋 复制JSON</button>
-                    </div>
                 </div>
             `).join('');
         }
@@ -337,7 +500,7 @@
             window.open(url, '_blank');
         }
 
-        function approveSubmission(id) {
+        async function approveSubmission(id) {
             const submission = pendingSubmissions.find(s => s.id === id);
             if (!submission) return;
 
@@ -356,17 +519,18 @@
                 likes: 0
             };
 
-            const jsonOutput = document.getElementById('json-output-' + id);
-            const jsonContainer = document.getElementById('json-' + id);
-            
-            jsonOutput.textContent = JSON.stringify(jsonData, null, 2);
-            jsonContainer.style.display = 'block';
+            if (!confirm('✅ 确定要通过这条投稿吗？\n\n将自动添加到GitHub并从待审核列表删除！')) {
+                return;
+            }
 
-            if (confirm('✅ 已生成JSON！\n\n请复制上面的JSON，然后手动添加到 works-data.json 文件中。\n\n是否同时从待审核列表中删除这条投稿？')) {
+            const success = await updateGithubWorksData(jsonData);
+            
+            if (success) {
                 pendingSubmissions = pendingSubmissions.filter(s => s.id !== id);
                 savePendingSubmissions();
                 renderSubmissions();
                 updateStats();
+                alert('✅ 投稿已通过！已自动添加到GitHub！');
             }
         }
 
@@ -379,17 +543,7 @@
             }
         }
 
-        function copyJson(id) {
-            const jsonOutput = document.getElementById('json-output-' + id);
-            const text = jsonOutput.textContent;
-            
-            navigator.clipboard.writeText(text).then(() => {
-                alert('📋 JSON已复制到剪贴板！');
-            }).catch(err => {
-                console.error('复制失败:', err);
-                alert('❌ 复制失败，请手动复制！');
-            });
-        }
+
 
         function savePendingSubmissions() {
             try {
@@ -404,6 +558,7 @@
         }
 
         function init() {
+            loadGithubConfig();
             loadPendingSubmissions();
             updateStats();
             renderSubmissions();
