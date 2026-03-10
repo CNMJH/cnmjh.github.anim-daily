@@ -544,6 +544,12 @@
                 return;
             }
             
+            // 检查GitHub配置
+            if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo) {
+                alert('❌ 请先配置GitHub！点击右上角"⚙️ 配置GitHub"');
+                return;
+            }
+            
             if (indexStr === '') {
                 // 新增内容
                 const newWork = {
@@ -575,9 +581,22 @@
             
             // 保存到GitHub
             try {
+                console.log('开始保存操作...');
+                console.log('GitHub配置:', {
+                    owner: githubConfig.owner,
+                    repo: githubConfig.repo,
+                    branch: githubConfig.branch,
+                    token: githubConfig.token ? '***已设置***' : '未设置'
+                });
+                
+                console.log('正在获取文件SHA...');
                 const sha = await getFileSha();
+                console.log('获取SHA成功:', sha);
+                
                 const content = btoa(unescape(encodeURIComponent(JSON.stringify(worksManageData, null, 2))));
                 const updateUrl = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/works-data.json`;
+                
+                console.log('正在更新GitHub文件...');
                 const response = await fetch(updateUrl, {
                     method: 'PUT',
                     headers: {
@@ -593,16 +612,38 @@
                     })
                 });
                 
+                console.log('GitHub响应状态:', response.status, response.statusText);
+                
                 if (response.ok) {
                     alert('✅ 保存成功！');
                     closeWorkManageModal();
                     loadWorksForManage();
                 } else {
-                    throw new Error('保存失败');
+                    let errorMsg = '保存失败';
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.message || errorMsg;
+                    } catch (e) {
+                        errorMsg = response.statusText || errorMsg;
+                    }
+                    throw new Error(errorMsg);
                 }
             } catch (e) {
                 console.error('保存失败:', e);
-                alert('❌ 保存失败！请检查GitHub配置！');
+                let errorMsg = e.message || '未知错误';
+                
+                // 更友好的错误提示
+                if (errorMsg.includes('401') || errorMsg.includes('Bad credentials')) {
+                    errorMsg = 'GitHub Token无效或已过期，请重新配置！';
+                } else if (errorMsg.includes('404')) {
+                    errorMsg = '找不到仓库或文件，请检查Owner、Repo名称是否正确！';
+                } else if (errorMsg.includes('403')) {
+                    errorMsg = '没有权限操作，请检查Token权限是否包含repo！';
+                } else if (errorMsg.includes('network') || errorMsg.includes('fetch')) {
+                    errorMsg = '网络连接失败，请检查网络连接！';
+                }
+                
+                alert('❌ 保存失败！\n\n错误信息：' + errorMsg + '\n\n请检查GitHub配置！');
             }
         }
 
@@ -613,14 +654,33 @@
                 return;
             }
             
+            // 检查GitHub配置
+            if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo) {
+                alert('❌ 请先配置GitHub！点击右上角"⚙️ 配置GitHub"');
+                return;
+            }
+            
             try {
+                console.log('开始删除操作...');
+                console.log('GitHub配置:', {
+                    owner: githubConfig.owner,
+                    repo: githubConfig.repo,
+                    branch: githubConfig.branch,
+                    token: githubConfig.token ? '***已设置***' : '未设置'
+                });
+                
                 // 从worksManageData中删除
                 worksManageData.splice(index, 1);
                 
                 // 保存到GitHub
+                console.log('正在获取文件SHA...');
                 const sha = await getFileSha();
+                console.log('获取SHA成功:', sha);
+                
                 const content = btoa(unescape(encodeURIComponent(JSON.stringify(worksManageData, null, 2))));
                 const updateUrl = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/works-data.json`;
+                
+                console.log('正在更新GitHub文件...');
                 const response = await fetch(updateUrl, {
                     method: 'PUT',
                     headers: {
@@ -636,15 +696,37 @@
                     })
                 });
                 
+                console.log('GitHub响应状态:', response.status, response.statusText);
+                
                 if (response.ok) {
                     alert('🗑️ 删除成功！');
                     loadWorksForManage();
                 } else {
-                    throw new Error('删除失败');
+                    let errorMsg = '删除失败';
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.message || errorMsg;
+                    } catch (e) {
+                        errorMsg = response.statusText || errorMsg;
+                    }
+                    throw new Error(errorMsg);
                 }
             } catch (e) {
                 console.error('删除失败:', e);
-                alert('❌ 删除失败！请检查GitHub配置！');
+                let errorMsg = e.message || '未知错误';
+                
+                // 更友好的错误提示
+                if (errorMsg.includes('401') || errorMsg.includes('Bad credentials')) {
+                    errorMsg = 'GitHub Token无效或已过期，请重新配置！';
+                } else if (errorMsg.includes('404')) {
+                    errorMsg = '找不到仓库或文件，请检查Owner、Repo名称是否正确！';
+                } else if (errorMsg.includes('403')) {
+                    errorMsg = '没有权限操作，请检查Token权限是否包含repo！';
+                } else if (errorMsg.includes('network') || errorMsg.includes('fetch')) {
+                    errorMsg = '网络连接失败，请检查网络连接！';
+                }
+                
+                alert('❌ 删除失败！\n\n错误信息：' + errorMsg + '\n\n请检查GitHub配置！');
             }
         }
 
@@ -944,6 +1026,8 @@
 
         async function getFileSha() {
             const url = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/works-data.json?ref=${githubConfig.branch}`;
+            console.log('正在请求GitHub API:', url);
+            
             const response = await fetch(url, {
                 headers: {
                     'Authorization': `token ${githubConfig.token}`,
@@ -951,8 +1035,17 @@
                 }
             });
             
+            console.log('GitHub API响应状态:', response.status, response.statusText);
+            
             if (!response.ok) {
-                throw new Error('获取文件信息失败');
+                let errorMsg = '获取文件信息失败';
+                try {
+                    const errorData = await response.json();
+                    errorMsg = errorData.message || errorMsg;
+                } catch (e) {
+                    errorMsg = response.statusText || errorMsg;
+                }
+                throw new Error(errorMsg);
             }
             
             const data = await response.json();
@@ -961,6 +1054,8 @@
 
         async function getCurrentWorksData() {
             const url = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/works-data.json?ref=${githubConfig.branch}`;
+            console.log('正在获取当前内容:', url);
+            
             const response = await fetch(url, {
                 headers: {
                     'Authorization': `token ${githubConfig.token}`,
@@ -968,8 +1063,17 @@
                 }
             });
             
+            console.log('获取当前内容响应状态:', response.status, response.statusText);
+            
             if (!response.ok) {
-                throw new Error('获取当前内容失败');
+                let errorMsg = '获取当前内容失败';
+                try {
+                    const errorData = await response.json();
+                    errorMsg = errorData.message || errorMsg;
+                } catch (e) {
+                    errorMsg = response.statusText || errorMsg;
+                }
+                throw new Error(errorMsg);
             }
             
             const data = await response.json();
