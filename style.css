@@ -127,43 +127,44 @@ header {
 
 /* 亮色主题 */
 body.light-theme {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    color: #1a1a2e;
+    background: #f8fafc;
+    color: #1e293b;
 }
 
 body.light-theme .work-card {
-    background: rgba(255,255,255,0.9);
-    border-color: rgba(0,0,0,0.1);
-    color: #1a1a2e;
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #1e293b;
 }
 
 body.light-theme .work-title {
-    color: #1a1a2e;
+    color: #1e293b;
 }
 
 body.light-theme .work-description {
-    color: rgba(0,0,0,0.7);
+    color: #64748b;
 }
 
 body.light-theme header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
 }
 
 body.light-theme .today-recommend {
-    background: rgba(102,126,234,0.1);
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 body.light-theme .recommend-card {
-    background: rgba(255,255,255,0.9);
-    border-color: rgba(0,0,0,0.1);
+    background: #f8fafc;
+    border-color: #e2e8f0;
 }
 
 body.light-theme .recommend-card-title {
-    color: #1a1a2e;
+    color: #1e293b;
 }
 
 body.light-theme .recommend-card-meta {
-    color: rgba(0,0,0,0.6);
+    color: #94a3b8;
 }
 
 /* 我的收藏按钮 */
