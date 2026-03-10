@@ -314,26 +314,15 @@
             }
         }
 
-        // 从GitHub Issues加载举报
+        // 从Supabase加载举报
         async function loadReports() {
-            if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo) {
-                document.getElementById('reportsList').innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">⚙️</div>
-                        <h3>请先配置GitHub</h3>
-                        <p>点击右上角"⚙️ 配置GitHub"来查看举报！</p>
-                    </div>
-                `;
-                document.getElementById('reportCount').textContent = '0';
-                return;
-            }
-
             try {
-                const url = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/issues?state=open&labels=举报`;
+                const url = `${SUPABASE_URL}/rest/v1/reports?status=eq.pending&order=created_at.desc`;
                 const response = await fetch(url, {
                     headers: {
-                        'Authorization': `token ${githubConfig.token}`,
-                        'Accept': 'application/vnd.github.v3+json'
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Accept': 'application/json'
                     }
                 });
 
@@ -349,9 +338,10 @@
                     <div class="empty-state">
                         <div class="icon">❌</div>
                         <h3>加载举报失败</h3>
-                        <p>请检查GitHub配置是否正确！</p>
+                        <p>请稍后再试！</p>
                     </div>
                 `;
+                document.getElementById('reportCount').textContent = '0';
             }
         }
 
@@ -372,25 +362,21 @@
             }
 
             container.innerHTML = reports.map(report => {
-                const body = report.body || '';
-                const urlMatch = body.match(/\*\*内容链接：\*\*\s*(.+?)\n/);
-                const workIdMatch = body.match(/\*\*作品ID：\*\*\s*(.+?)\n/);
-                
                 return `
                     <div class="submission-card">
                         <div class="submission-header">
                             <div class="submission-info">
-                                <div class="submission-title">${escapeHtml(report.title)}</div>
-                                <div class="submission-url">${urlMatch ? escapeHtml(urlMatch[1]) : '无链接'}</div>
+                                <div class="submission-title">${escapeHtml(report.work_title || '无标题')}</div>
+                                <div class="submission-url">${escapeHtml(report.work_url || '无链接')}</div>
                                 <div class="submission-meta">
-                                    <span class="meta-tag">🆔 ${workIdMatch ? escapeHtml(workIdMatch[1]) : '未知'}</span>
+                                    <span class="meta-tag">🆔 ${escapeHtml(report.work_id || '未知')}</span>
                                     <span class="meta-tag">🕐 ${formatDate(report.created_at)}</span>
                                 </div>
                             </div>
                         </div>
                         <div class="submission-actions">
-                            <button class="action-btn view-btn" onclick="viewLink('${urlMatch ? escapeHtml(urlMatch[1]) : ''}')">🔗 打开链接</button>
-                            <button class="action-btn approve-btn" onclick="handleReport(${report.number})">✅ 已处理</button>
+                            <button class="action-btn view-btn" onclick="viewLink('${escapeHtml(report.work_url || '')}')">🔗 打开链接</button>
+                            <button class="action-btn approve-btn" onclick="handleReport('${report.id}')">✅ 已处理</button>
                         </div>
                     </div>
                 `;
@@ -398,23 +384,23 @@
         }
 
         // 处理举报
-        async function handleReport(issueNumber) {
+        async function handleReport(reportId) {
             if (!confirm('✅ 确定要标记这个举报为已处理吗？')) {
                 return;
             }
 
             try {
-                const url = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/issues/${issueNumber}`;
+                const url = `${SUPABASE_URL}/rest/v1/reports?id=eq.${reportId}`;
                 const response = await fetch(url, {
                     method: 'PATCH',
                     headers: {
-                        'Authorization': `token ${githubConfig.token}`,
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json'
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
                     },
                     body: JSON.stringify({
-                        state: 'closed',
-                        labels: ['已处理']
+                        status: 'resolved'
                     })
                 });
 

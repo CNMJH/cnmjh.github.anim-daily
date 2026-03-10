@@ -376,12 +376,12 @@ function scheduleLinkCheck() {
 }
 
 // 标记链接为失效（用户举报）
-function markLinkInvalid(workId, event) {
+async function markLinkInvalid(workId, event) {
     event.stopPropagation(); // 阻止冒泡
     
     if (!confirm('确定要举报这个链接失效吗？')) return;
     
-    // 保存到本地
+    // 先保存到本地
     linkCheckResults[workId] = {
         workId: workId,
         status: 'invalid',
@@ -390,7 +390,42 @@ function markLinkInvalid(workId, event) {
     };
     saveLinkCheckResults();
     
-    alert('✅ 已提交举报！感谢反馈！管理员会尽快处理！');
+    // 同时保存到Supabase（跨设备可见）
+    try {
+        const work = worksData.find(w => w.id === workId);
+        const workTitle = work ? work.title : '未知作品';
+        const workUrl = work ? work.url : '无链接';
+        
+        const data = {
+            work_id: workId,
+            work_title: workTitle,
+            work_url: workUrl,
+            status: 'pending',
+            created_at: new Date().toISOString()
+        };
+        
+        // 直接用Supabase的API保存
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+            method: 'POST',
+            headers: {
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            alert('✅ 已提交举报！感谢反馈！管理员会尽快处理！');
+        } else {
+            alert('✅ 已提交举报！感谢反馈！');
+        }
+    } catch (e) {
+        console.error('保存举报到Supabase失败:', e);
+        alert('✅ 已提交举报！感谢反馈！');
+    }
+    
     renderWorks(filterWorksData());
 }
 
