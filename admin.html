@@ -217,6 +217,7 @@
 
         <div class="nav-tabs" style="display: flex; gap: 5px; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; flex-wrap: wrap;">
             <button class="nav-tab active" style="padding: 12px 24px; background: #fff; border: none; border-bottom: 2px solid #3b82f6; color: #3b82f6; cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; border-radius: 8px 8px 0 0;" onclick="switchAdminTab('submissions')">📋 投稿审核</button>
+            <button class="nav-tab" style="padding: 12px 24px; background: #f8fafc; border: none; border-bottom: 2px solid transparent; color: #64748b; cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; border-radius: 8px 8px 0 0;" onclick="switchAdminTab('works')">🎬 内容管理</button>
             <button class="nav-tab" style="padding: 12px 24px; background: #f8fafc; border: none; border-bottom: 2px solid transparent; color: #64748b; cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; border-radius: 8px 8px 0 0;" onclick="switchAdminTab('reports')">⚠️ 举报管理</button>
         </div>
 
@@ -241,6 +242,25 @@
             </div>
         </div>
 
+        <div id="works-section" style="display:none;">
+            <div class="stats-cards" style="margin-bottom: 20px;">
+                <div class="stat-card">
+                    <h3>总内容数</h3>
+                    <div class="number" id="totalWorksCount">0</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);">
+                    <h3>动画作品</h3>
+                    <div class="number" id="animationWorksCount">0</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                    <h3>Pose参考</h3>
+                    <div class="number" id="poseWorksCount">0</div>
+                </div>
+            </div>
+            <div style="margin-bottom: 20px;"><button class="add-btn" onclick="openAddWorkModal()">+ 新增内容</button></div>
+            <div class="submission-list" id="worksManageList"></div>
+        </div>
+
         <div id="reports-section" style="display:none;">
             <div class="stats-cards" style="margin-bottom: 20px;">
                 <div class="stat-card">
@@ -256,6 +276,52 @@
             <div class="submission-list" id="reportsList">
                 <!-- 举报列表将通过JS动态加载 -->
             </div>
+        </div>
+    </div>
+
+    <!-- 内容管理弹窗 -->
+    <div id="workManageModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="workManageModalTitle">编辑内容</h2>
+                <button class="modal-close" onclick="closeWorkManageModal()">×</button>
+            </div>
+            <form id="workManageForm" onsubmit="saveWorkManage(event)">
+                <input type="hidden" id="workManageId">
+                <div class="form-group">
+                    <label>内容链接 *</label>
+                    <input type="url" id="workManageUrl" placeholder="请输入B站/花瓣链接" required>
+                </div>
+                <div class="form-group">
+                    <label>内容标题 *</label>
+                    <input type="text" id="workManageTitle" placeholder="内容标题" required>
+                </div>
+                <div class="form-group">
+                    <label>内容分类 *</label>
+                    <select id="workManageType" onchange="updateWorkManageSubcategories()" required>
+                        <option value="animation">动画作品</option>
+                        <option value="pose">Pose 参考</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>子分类 *</label>
+                    <select id="workManageSubcategory" required>
+                        <option value="">请先选择内容分类</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>简短描述</label>
+                    <textarea id="workManageDescription" placeholder="简单介绍这个内容" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>标签（空格分隔）</label>
+                    <input type="text" id="workManageTags" placeholder="例如：Maya 角色动画">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeWorkManageModal()">取消</button>
+                    <button type="submit" class="save-btn">保存</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -304,18 +370,290 @@
         };
 
         // 切换管理标签
+        let worksManageData = [];
+        
         function switchAdminTab(tab) {
             document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
             
             if (tab === 'submissions') {
                 document.getElementById('submissions-section').style.display = 'block';
+                document.getElementById('works-section').style.display = 'none';
                 document.getElementById('reports-section').style.display = 'none';
+            } else if (tab === 'works') {
+                document.getElementById('submissions-section').style.display = 'none';
+                document.getElementById('works-section').style.display = 'block';
+                document.getElementById('reports-section').style.display = 'none';
+                loadWorksForManage();
             } else if (tab === 'reports') {
                 document.getElementById('submissions-section').style.display = 'none';
+                document.getElementById('works-section').style.display = 'none';
                 document.getElementById('reports-section').style.display = 'block';
                 loadReports();
             }
+        }
+
+        // 加载内容用于管理
+        async function loadWorksForManage() {
+            try {
+                worksManageData = await getCurrentWorksData();
+                renderWorksForManage();
+            } catch (e) {
+                console.error('加载内容失败:', e);
+                document.getElementById('worksManageList').innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">❌</div>
+                        <h3>加载内容失败</h3>
+                        <p>请先配置GitHub！</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 渲染内容管理列表
+        function renderWorksForManage() {
+            const container = document.getElementById('worksManageList');
+            
+            if (!worksManageData || worksManageData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">🎬</div>
+                        <h3>暂无内容</h3>
+                        <p>点击"新增内容"添加第一个作品！</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 更新统计
+            document.getElementById('totalWorksCount').textContent = worksManageData.length;
+            document.getElementById('animationWorksCount').textContent = worksManageData.filter(w => w.type === 'animation').length;
+            document.getElementById('poseWorksCount').textContent = worksManageData.filter(w => w.type === 'pose').length;
+            
+            container.innerHTML = worksManageData.map((work, index) => {
+                return `
+                    <div class="submission-card">
+                        <div class="submission-header">
+                            <div class="submission-info">
+                                <div class="submission-title">${escapeHtml(work.title || '无标题')}</div>
+                                <div class="submission-url" style="cursor: pointer; color: #3b82f6;" onclick="window.open('${escapeHtml(work.url || '')}', '_blank')">${escapeHtml(work.url || '无链接')}</div>
+                                <div class="submission-meta">
+                                    <span class="meta-tag">${work.type === 'animation' ? '🎬 动画作品' : '🧍 Pose参考'}</span>
+                                    <span class="meta-tag">📁 ${getSubcategoryName(work.subcategory)}</span>
+                                    <span class="meta-tag">🆔 ${escapeHtml(work.id || '未知')}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="submission-actions">
+                            <button class="action-btn view-btn" onclick="window.open('${escapeHtml(work.url || '')}', '_blank')">🔗 打开链接</button>
+                            <button class="action-btn approve-btn" onclick="openEditWorkModal(${index})">✏️ 编辑</button>
+                            <button class="action-btn" style="background: #fee2e2; color: #ef4444; border: 1px solid #fecaca;" onclick="deleteWorkManage(${index})">🗑️ 删除</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 获取子分类名称
+        function getSubcategoryName(subcategory) {
+            const names = {
+                'character': '角色动画',
+                'action': '动作场面',
+                'facial': '表情动画',
+                'creature': '生物动画',
+                'stand': '站立姿势',
+                'action_pose': '动态姿势',
+                'hand': '手部参考'
+            };
+            return names[subcategory] || subcategory;
+        }
+
+        // 打开新增内容弹窗
+        function openAddWorkModal() {
+            document.getElementById('workManageModalTitle').textContent = '新增内容';
+            document.getElementById('workManageForm').reset();
+            document.getElementById('workManageId').value = '';
+            document.getElementById('workManageSubcategory').innerHTML = '<option value="">请先选择内容分类</option>';
+            document.getElementById('workManageModal').style.display = 'flex';
+        }
+
+        // 打开编辑内容弹窗
+        function openEditWorkModal(index) {
+            const work = worksManageData[index];
+            document.getElementById('workManageModalTitle').textContent = '编辑内容';
+            document.getElementById('workManageId').value = index;
+            document.getElementById('workManageUrl').value = work.url || '';
+            document.getElementById('workManageTitle').value = work.title || '';
+            document.getElementById('workManageType').value = work.type || 'animation';
+            
+            // 更新子分类选项
+            updateWorkManageSubcategories();
+            document.getElementById('workManageSubcategory').value = work.subcategory || '';
+            
+            document.getElementById('workManageDescription').value = work.description || '';
+            document.getElementById('workManageTags').value = work.tags ? work.tags.join(' ') : '';
+            
+            document.getElementById('workManageModal').style.display = 'flex';
+        }
+
+        // 更新子分类选项
+        function updateWorkManageSubcategories() {
+            const type = document.getElementById('workManageType').value;
+            const subcategorySelect = document.getElementById('workManageSubcategory');
+            
+            let options = '<option value="">请选择子分类</option>';
+            
+            if (type === 'animation') {
+                options += `
+                    <option value="character">角色动画</option>
+                    <option value="action">动作场面</option>
+                    <option value="facial">表情动画</option>
+                    <option value="creature">生物动画</option>
+                `;
+            } else if (type === 'pose') {
+                options += `
+                    <option value="stand">站立姿势</option>
+                    <option value="action_pose">动态姿势</option>
+                    <option value="hand">手部参考</option>
+                `;
+            }
+            
+            subcategorySelect.innerHTML = options;
+        }
+
+        // 关闭内容管理弹窗
+        function closeWorkManageModal() {
+            document.getElementById('workManageModal').style.display = 'none';
+        }
+
+        // 保存内容
+        async function saveWorkManage(event) {
+            event.preventDefault();
+            
+            const indexStr = document.getElementById('workManageId').value;
+            const url = document.getElementById('workManageUrl').value;
+            const title = document.getElementById('workManageTitle').value;
+            const type = document.getElementById('workManageType').value;
+            const subcategory = document.getElementById('workManageSubcategory').value;
+            const description = document.getElementById('workManageDescription').value;
+            const tagsStr = document.getElementById('workManageTags').value;
+            const tags = tagsStr ? tagsStr.split(/\s+/).filter(t => t.trim()) : [];
+            
+            if (!url || !title || !type || !subcategory) {
+                alert('请填写所有必填项！');
+                return;
+            }
+            
+            if (indexStr === '') {
+                // 新增内容
+                const newWork = {
+                    id: 'work_' + Date.now(),
+                    url: url,
+                    title: title,
+                    type: type,
+                    subcategory: subcategory,
+                    description: description,
+                    tags: tags,
+                    source: getSourceFromUrl(url),
+                    artist: '待确认',
+                    date: new Date().toISOString().split('T')[0],
+                    image: '',
+                    likes: 0
+                };
+                
+                worksManageData.push(newWork);
+            } else {
+                // 编辑内容
+                const index = parseInt(indexStr);
+                worksManageData[index].url = url;
+                worksManageData[index].title = title;
+                worksManageData[index].type = type;
+                worksManageData[index].subcategory = subcategory;
+                worksManageData[index].description = description;
+                worksManageData[index].tags = tags;
+            }
+            
+            // 保存到GitHub
+            try {
+                const sha = await getFileSha();
+                const content = btoa(unescape(encodeURIComponent(JSON.stringify(worksManageData, null, 2))));
+                const updateUrl = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/works-data.json`;
+                const response = await fetch(updateUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${githubConfig.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: indexStr === '' ? '新增内容: ' + title : '编辑内容: ' + title,
+                        content: content,
+                        sha: sha,
+                        branch: githubConfig.branch
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('✅ 保存成功！');
+                    closeWorkManageModal();
+                    loadWorksForManage();
+                } else {
+                    throw new Error('保存失败');
+                }
+            } catch (e) {
+                console.error('保存失败:', e);
+                alert('❌ 保存失败！请检查GitHub配置！');
+            }
+        }
+
+        // 删除内容
+        async function deleteWorkManage(index) {
+            const work = worksManageData[index];
+            if (!confirm(`🗑️ 确定要从网站永久删除这个内容吗？\n\n标题：${work.title}\n\n此操作不可撤销！`)) {
+                return;
+            }
+            
+            try {
+                // 从worksManageData中删除
+                worksManageData.splice(index, 1);
+                
+                // 保存到GitHub
+                const sha = await getFileSha();
+                const content = btoa(unescape(encodeURIComponent(JSON.stringify(worksManageData, null, 2))));
+                const updateUrl = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/works-data.json`;
+                const response = await fetch(updateUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${githubConfig.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: '删除内容: ' + work.title,
+                        content: content,
+                        sha: sha,
+                        branch: githubConfig.branch
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('🗑️ 删除成功！');
+                    loadWorksForManage();
+                } else {
+                    throw new Error('删除失败');
+                }
+            } catch (e) {
+                console.error('删除失败:', e);
+                alert('❌ 删除失败！请检查GitHub配置！');
+            }
+        }
+
+        // 从URL获取来源
+        function getSourceFromUrl(url) {
+            if (url.includes('bilibili.com')) return 'B站';
+            if (url.includes('huaban.com')) return '花瓣网';
+            if (url.includes('zcool.com.cn')) return '站酷';
+            return '其他';
         }
 
         // 从Supabase加载举报
