@@ -272,6 +272,237 @@ body.light-theme #totalCount {
     color: #3b82f6;
 }
 
+body.light-theme .favorites-btn {
+    color: #64748b;
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+body.light-theme .favorites-btn:hover {
+    color: #3b82f6;
+    background: #dbeafe;
+    border-color: #3b82f6;
+}
+
+body.light-theme .favorite-btn {
+    color: #64748b;
+    background: rgba(0,0,0,0.6);
+}
+
+body.light-theme .favorite-btn:hover {
+    color: #3b82f6;
+    background: #dbeafe;
+}
+
+body.light-theme .favorite-btn.active {
+    color: #fff;
+}
+
+body.light-theme .modal-content {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+body.light-theme .modal-header h2 {
+    color: #1e293b;
+}
+
+body.light-theme .modal-close {
+    color: #64748b;
+    background: #f1f5f9;
+}
+
+body.light-theme .modal-close:hover {
+    color: #3b82f6;
+    background: #dbeafe;
+}
+
+body.light-theme .form-group label {
+    color: #1e293b;
+}
+
+body.light-theme .form-group input,
+body.light-theme .form-group select,
+body.light-theme .form-group textarea {
+    color: #1e293b;
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+body.light-theme .form-group input::placeholder {
+    color: #94a3b8;
+}
+
+body.light-theme .form-hint {
+    color: #94a3b8;
+}
+
+body.light-theme .btn-secondary {
+    color: #64748b;
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+body.light-theme .btn-secondary:hover {
+    color: #3b82f6;
+    background: #dbeafe;
+    border-color: #3b82f6;
+}
+
+body.light-theme .page-btn {
+    color: #64748b;
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+body.light-theme .page-btn:hover:not(.disabled) {
+    color: #3b82f6;
+    background: #dbeafe;
+    border-color: #3b82f6;
+}
+
+body.light-theme .page-btn.active {
+    color: #fff;
+}
+
+body.light-theme .page-ellipsis {
+    color: #94a3b8;
+}
+
+body.light-theme .loading {
+    color: #64748b;
+}
+
+body.light-theme .work-type-tag {
+    color: #fff;
+}
+
+body.light-theme .source-tag {
+    color: #fff;
+}
+
+body.light-theme .work-category {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+body.light-theme .work-source {
+    color: #64748b;
+    background: #f1f5f9;
+}
+
+body.light-theme .work-artist {
+    color: #64748b;
+}
+
+body.light-theme .work-date {
+    color: #94a3b8;
+    background: #f1f5f9;
+}
+
+body.light-theme .share-btn {
+    color: #64748b;
+    background: #f1f5f9;
+}
+
+body.light-theme .share-btn:hover {
+    color: #3b82f6;
+    background: #dbeafe;
+}
+
+body.light-theme .like-btn {
+    color: #64748b;
+    background: #f1f5f9;
+}
+
+body.light-theme .like-btn:hover {
+    color: #3b82f6;
+    background: #dbeafe;
+}
+
+body.light-theme .like-btn .like-count {
+    color: #64748b;
+}
+
+body.light-theme .report-btn {
+    color: #64748b;
+    background: #f1f5f9;
+}
+
+body.light-theme .report-btn:hover {
+    color: #ef4444;
+    background: #fef2f2;
+}
+
+body.light-theme .tag-btn {
+    color: #64748b;
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+body.light-theme .tag-btn:hover {
+    color: #3b82f6;
+    background: #dbeafe;
+    border-color: #3b82f6;
+}
+
+body.light-theme .tag-btn.active {
+    color: #fff;
+}
+
+body.light-theme .folder-btn {
+    color: #64748b;
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+body.light-theme .folder-btn:hover {
+    color: #3b82f6;
+    background: #dbeafe;
+    border-color: #3b82f6;
+}
+
+body.light-theme .folder-btn.active {
+    color: #fff;
+}
+
+body.light-theme .new-folder-btn {
+    color: #64748b;
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+body.light-theme .new-folder-btn:hover {
+    color: #3b82f6;
+    background: #dbeafe;
+    border-color: #3b82f6;
+}
+
+body.light-theme .clear-history-btn {
+    color: #64748b;
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+body.light-theme .clear-history-btn:hover {
+    color: #ef4444;
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+body.light-theme .tags-title {
+    color: #1e293b;
+}
+
+body.light-theme .folders-title {
+    color: #1e293b;
+}
+
+body.light-theme .history-title {
+    color: #1e293b;
+}
+
 /* 我的收藏按钮 */
 .favorites-btn {
     margin: 20px auto 0;
