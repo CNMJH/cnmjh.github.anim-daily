@@ -215,24 +215,43 @@
             </div>
         </div>
 
-        <div class="stats-cards">
-            <div class="stat-card">
-                <h3>待审核投稿</h3>
-                <div class="number" id="pendingCount">0</div>
+        <div class="nav-tabs" style="margin-bottom: 20px;">
+            <button class="nav-tab active" onclick="switchAdminTab('submissions')">📋 投稿审核</button>
+            <button class="nav-tab" onclick="switchAdminTab('reports')">⚠️ 举报管理</button>
+        </div>
+
+        <div id="submissions-section">
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <h3>待审核投稿</h3>
+                    <div class="number" id="pendingCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>今日投稿</h3>
+                    <div class="number" id="todayCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>总投稿数</h3>
+                    <div class="number" id="totalSubCount">0</div>
+                </div>
             </div>
-            <div class="stat-card">
-                <h3>今日投稿</h3>
-                <div class="number" id="todayCount">0</div>
-            </div>
-            <div class="stat-card">
-                <h3>总投稿数</h3>
-                <div class="number" id="totalSubCount">0</div>
+            <h2 class="section-title">📋 待审核投稿</h2>
+            <div class="submission-list" id="submissionList">
+                <!-- 投稿列表将通过JS动态加载 -->
             </div>
         </div>
 
-        <h2 class="section-title">📋 待审核投稿</h2>
-        <div class="submission-list" id="submissionList">
-            <!-- 投稿列表将通过JS动态加载 -->
+        <div id="reports-section" style="display:none;">
+            <div class="stats-cards" style="margin-bottom: 20px;">
+                <div class="stat-card">
+                    <h3>待处理举报</h3>
+                    <div class="number" id="reportCount">0</div>
+                </div>
+            </div>
+            <h2 class="section-title">⚠️ 举报管理</h2>
+            <div class="submission-list" id="reportsList">
+                <!-- 举报列表将通过JS动态加载 -->
+            </div>
         </div>
     </div>
 
@@ -272,12 +291,144 @@
 
     <script>
         let pendingSubmissions = [];
+        let reports = [];
         let githubConfig = {
             token: '',
             owner: '',
             repo: '',
             branch: 'main'
         };
+
+        // 切换管理标签
+        function switchAdminTab(tab) {
+            document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (tab === 'submissions') {
+                document.getElementById('submissions-section').style.display = 'block';
+                document.getElementById('reports-section').style.display = 'none';
+            } else if (tab === 'reports') {
+                document.getElementById('submissions-section').style.display = 'none';
+                document.getElementById('reports-section').style.display = 'block';
+                loadReports();
+            }
+        }
+
+        // 从GitHub Issues加载举报
+        async function loadReports() {
+            if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo) {
+                document.getElementById('reportsList').innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">⚙️</div>
+                        <h3>请先配置GitHub</h3>
+                        <p>点击右上角"⚙️ 配置GitHub"来查看举报！</p>
+                    </div>
+                `;
+                document.getElementById('reportCount').textContent = '0';
+                return;
+            }
+
+            try {
+                const url = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/issues?state=open&labels=举报`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `token ${githubConfig.token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('获取举报失败');
+                }
+
+                reports = await response.json();
+                renderReports();
+            } catch (e) {
+                console.error('❌ 加载举报失败:', e);
+                document.getElementById('reportsList').innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">❌</div>
+                        <h3>加载举报失败</h3>
+                        <p>请检查GitHub配置是否正确！</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 渲染举报列表
+        function renderReports() {
+            const container = document.getElementById('reportsList');
+            document.getElementById('reportCount').textContent = reports.length;
+
+            if (!reports || reports.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">✅</div>
+                        <h3>暂无待处理举报</h3>
+                        <p>所有举报都已处理完毕！</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = reports.map(report => {
+                const body = report.body || '';
+                const urlMatch = body.match(/\*\*内容链接：\*\*\s*(.+?)\n/);
+                const workIdMatch = body.match(/\*\*作品ID：\*\*\s*(.+?)\n/);
+                
+                return `
+                    <div class="submission-card">
+                        <div class="submission-header">
+                            <div class="submission-info">
+                                <div class="submission-title">${escapeHtml(report.title)}</div>
+                                <div class="submission-url">${urlMatch ? escapeHtml(urlMatch[1]) : '无链接'}</div>
+                                <div class="submission-meta">
+                                    <span class="meta-tag">🆔 ${workIdMatch ? escapeHtml(workIdMatch[1]) : '未知'}</span>
+                                    <span class="meta-tag">🕐 ${formatDate(report.created_at)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="submission-actions">
+                            <button class="action-btn view-btn" onclick="viewLink('${urlMatch ? escapeHtml(urlMatch[1]) : ''}')">🔗 打开链接</button>
+                            <button class="action-btn approve-btn" onclick="handleReport(${report.number})">✅ 已处理</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 处理举报
+        async function handleReport(issueNumber) {
+            if (!confirm('✅ 确定要标记这个举报为已处理吗？')) {
+                return;
+            }
+
+            try {
+                const url = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/issues/${issueNumber}`;
+                const response = await fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `token ${githubConfig.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        state: 'closed',
+                        labels: ['已处理']
+                    })
+                });
+
+                if (response.ok) {
+                    alert('✅ 举报已标记为已处理！');
+                    loadReports();
+                } else {
+                    alert('❌ 处理失败！');
+                }
+            } catch (e) {
+                console.error('处理举报失败:', e);
+                alert('❌ 处理失败！');
+            }
+        }
 
         function loadGithubConfig() {
             try {
