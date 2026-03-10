@@ -545,7 +545,12 @@ function renderFolders() {
         
         html += `
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                <button class="folder-btn ${isActive ? 'active' : ''}" onclick="switchFolder('${folder.id}')" style="flex: 1; text-align: left;">
+                <button class="folder-btn ${isActive ? 'active' : ''}" 
+                        onclick="switchFolder('${folder.id}')" 
+                        ondragover="handleDragOver(event)" 
+                        ondragleave="handleDragLeave(event)"
+                        ondrop="handleDrop(event, '${folder.id}')"
+                        style="flex: 1; text-align: left;">
                     ${escapeHtml(folder.name)} (${count})
                 </button>
                 ${!isDefault ? `
@@ -1247,7 +1252,10 @@ function renderWorks(works) {
         const likeCount = siteLikeCount;
         
         html += `
-        <div class="work-card" onclick="handleCardClick('${workId.replace(/'/g, "\\'")}', '${safeUrl}')" style="cursor:pointer">
+        <div class="work-card" onclick="handleCardClick('${workId.replace(/'/g, "\\'")}', '${safeUrl}')" 
+             draggable="true" 
+             ondragstart="handleDragStart(event, '${workId.replace(/'/g, "\\'")}')"
+             style="cursor:pointer">
             <div class="work-card-image">
                 <img src="${escapeHtml(item.image || '')}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/400x240/1a1a2e/e94560?text=Animation+Art'">
                 <span class="work-type-tag ${item.type}">${typeText}</span>
@@ -1403,4 +1411,106 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+});
+
+// ========== 拖拽功能 ==========
+let draggedWorkId = null;
+
+// 开始拖拽
+function handleDragStart(event, workId) {
+    draggedWorkId = workId;
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', workId);
+    
+    // 添加拖拽样式
+    event.target.style.opacity = '0.5';
+}
+
+// 拖拽经过目标
+function handleDragOver(event) {
+    event.preventDefault(); // 允许放置
+    event.dataTransfer.dropEffect = 'move';
+    event.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)';
+    event.currentTarget.style.borderColor = '#3b82f6';
+}
+
+// 拖拽离开目标
+function handleDragLeave(event) {
+    event.currentTarget.style.background = '';
+    event.currentTarget.style.borderColor = '';
+}
+
+// 放置到目标
+function handleDrop(event, targetFolderId) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // 恢复样式
+    event.currentTarget.style.background = '';
+    event.currentTarget.style.borderColor = '';
+    
+    if (!draggedWorkId) return;
+    
+    // 找到当前作品所在的所有收藏夹
+    let sourceFolders = [];
+    favorites.folders.forEach(folder => {
+        if (folder.works.includes(draggedWorkId)) {
+            sourceFolders.push(folder.id);
+        }
+    });
+    
+    // 如果目标是"全部收藏"，不做任何操作
+    if (targetFolderId === 'all') {
+        draggedWorkId = null;
+        return;
+    }
+    
+    // 检查作品是否已经在目标收藏夹中
+    const targetFolder = favorites.folders.find(f => f.id === targetFolderId);
+    if (targetFolder && targetFolder.works.includes(draggedWorkId)) {
+        alert('这个作品已经在该收藏夹中了！');
+        draggedWorkId = null;
+        return;
+    }
+    
+    // 从其他收藏夹中移除（除了"全部收藏"）
+    favorites.folders.forEach(folder => {
+        if (folder.id !== 'all' && folder.id !== targetFolderId) {
+            const index = folder.works.indexOf(draggedWorkId);
+            if (index > -1) {
+                folder.works.splice(index, 1);
+            }
+        }
+    });
+    
+    // 添加到目标收藏夹
+    if (targetFolder) {
+        targetFolder.works.push(draggedWorkId);
+    }
+    
+    // 确保"全部收藏"也有这个作品
+    const allFolder = favorites.folders.find(f => f.id === 'all');
+    if (allFolder && !allFolder.works.includes(draggedWorkId)) {
+        allFolder.works.push(draggedWorkId);
+    }
+    
+    // 保存并刷新
+    saveFavorites();
+    renderFolders();
+    if (currentCategory === 'favorites') {
+        renderWorks(filterWorksData());
+    }
+    
+    alert('✅ 已移动到收藏夹：' + (targetFolder ? targetFolder.name : targetFolderId));
+    
+    draggedWorkId = null;
+}
+
+// 页面加载完成后，添加拖拽结束监听
+document.addEventListener('dragend', function(event) {
+    // 恢复所有卡片的透明度
+    document.querySelectorAll('.work-card').forEach(card => {
+        card.style.opacity = '1';
+    });
+    draggedWorkId = null;
 });

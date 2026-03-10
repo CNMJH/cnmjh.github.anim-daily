@@ -1162,6 +1162,25 @@ body.light-theme .form-group select option {
     transform: translateY(-1px);
 }
 
+/* 拖拽相关样式 */
+.work-card[draggable="true"] {
+    cursor: grab;
+}
+
+.work-card[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+.folder-btn {
+    transition: all 0.2s ease;
+}
+
+.folder-btn.drag-over {
+    background: rgba(59, 130, 246, 0.2) !important;
+    border-color: #3b82f6 !important;
+    transform: scale(1.02);
+}
+
 .tag-btn.active {
     background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
     border-color: transparent;
