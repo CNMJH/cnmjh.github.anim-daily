@@ -1265,7 +1265,7 @@ function renderWorks(works) {
              ondragstart="handleDragStart(event, '${workId.replace(/'/g, "\\'")}')"
              style="cursor:pointer">
             <div class="work-card-image">
-                <img src="${escapeHtml(item.image || '')}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/400x240/1a1a2e/e94560?text=Animation+Art'">
+                <img src="${escapeHtml(item.image && item.image.trim() !== '' ? item.image : 'https://via.placeholder.com/400x240/1a1a2e/e94560?text=Animation+Art')}" alt="${escapeHtml(item.title)}">
                 <span class="work-type-tag ${item.type}">${typeText}</span>
                 <span class="source-tag">${escapeHtml(item.source)}</span>
                 <button class="favorite-btn ${favClass}" onclick="toggleFavorite('${workId.replace(/'/g, "\\'")}', event)" title="收藏">${favIcon}</button>
