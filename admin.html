@@ -1448,39 +1448,48 @@
         }
 
         // 获取B站缩略图URL（小图：320x180）
-        async function getBilibiliThumbnailUrl(bvid) {
-            if (!bvid) return null;
-            
-            try {
-                // 使用免费的CORS代理
-                const apiUrl = `https://api.bilibili.com/x/player/pagelist?bvid=${bvid}`;
-                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+        function getBilibiliThumbnailUrl(bvid) {
+            return new Promise((resolve) => {
+                if (!bvid) {
+                    resolve(null);
+                    return;
+                }
                 
-                const response = await fetch(proxyUrl);
+                const callbackName = 'bili_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+                const script = document.createElement('script');
                 
-                if (!response.ok) {
-                    console.log('代理请求失败，尝试另一个代理...');
-                    // 尝试另一个代理
-                    const proxyUrl2 = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
-                    const response2 = await fetch(proxyUrl2);
-                    if (!response2.ok) return null;
-                    
-                    const data2 = await response2.json();
-                    if (data2 && data2.data && data2.data.length > 0 && data2.data[0].pic) {
-                        return data2.data[0].pic + '@320w_180h.jpg';
+                window[callbackName] = function(data) {
+                    try {
+                        if (data && data.data && data.data.length > 0 && data.data[0].pic) {
+                            resolve(data.data[0].pic + '@320w_180h.jpg');
+                        } else {
+                            resolve(null);
+                        }
+                    } catch (e) {
+                        resolve(null);
+                    } finally {
+                        delete window[callbackName];
+                        if (script.parentNode) script.parentNode.removeChild(script);
                     }
-                    return null;
-                }
+                };
                 
-                const data = await response.json();
-                if (data && data.data && data.data.length > 0 && data.data[0].pic) {
-                    return data.data[0].pic + '@320w_180h.jpg';
-                }
-                return null;
-            } catch (e) {
-                console.log('获取缩略图失败:', e);
-                return null;
-            }
+                script.onerror = function() {
+                    delete window[callbackName];
+                    if (script.parentNode) script.parentNode.removeChild(script);
+                    resolve(null);
+                };
+                
+                script.src = `https://api.bilibili.com/x/player/pagelist?bvid=${bvid}&jsonp=jsonp&callback=${callbackName}`;
+                document.head.appendChild(script);
+                
+                setTimeout(() => {
+                    if (window[callbackName]) {
+                        delete window[callbackName];
+                        if (script.parentNode) script.parentNode.removeChild(script);
+                        resolve(null);
+                    }
+                }, 10000);
+            });
         }
 
         // 添加缩略图进度日志
@@ -1532,18 +1541,6 @@
             
             addThumbnailLog(`📋 找到 ${worksToProcess.length} 个动画作品需要获取缩略图`, 'info');
             
-            // 检查七牛云配置
-            const accessKey = document.getElementById('qiniuAccessKey').value;
-            const secretKey = document.getElementById('qiniuSecretKey').value;
-            const bucket = document.getElementById('qiniuBucket').value;
-            const domain = document.getElementById('qiniuDomain').value;
-            
-            if (!bucket || !domain) {
-                addThumbnailLog('⚠️ 七牛云Bucket或CDN域名未配置，将直接使用B站缩略图链接', 'info');
-            } else {
-                addThumbnailLog('☁️ 七牛云配置已就绪', 'success');
-            }
-            
             let successCount = 0;
             let failCount = 0;
             
@@ -1551,38 +1548,32 @@
                 const item = worksToProcess[i];
                 const progress = Math.round(((i + 1) / worksToProcess.length) * 100);
                 
-                document.getElementById('thumbnailProgressText').textContent = `正在处理: ${item.title} (${i + 1}/${worksToProcess.length})`;
+                document.getElementById('thumbnailProgressText').textContent = `处理中: ${i + 1}/${worksToProcess.length}`;
                 document.getElementById('thumbnailProgressPercent').textContent = `${progress}%`;
                 document.getElementById('thumbnailProgressBar').style.width = `${progress}%`;
                 
-                addThumbnailLog(`🔍 [${i + 1}/${worksToProcess.length}] ${item.title}`, 'info');
-                
                 const bvid = extractBvidFromUrl(item.url);
                 if (!bvid) {
-                    addThumbnailLog(`❌ 无法提取BV号`, 'error');
+                    addThumbnailLog(`❌ ${item.title} - 无法提取BV号`, 'error');
                     failCount++;
                     continue;
                 }
                 
-                addThumbnailLog(`  BV号: ${bvid}`, 'info');
-                
                 const thumbUrl = await getBilibiliThumbnailUrl(bvid);
                 
                 if (thumbUrl) {
-                    // 更新worksData
                     const originalIndex = worksManageData.findIndex(w => w.url === item.url);
                     if (originalIndex !== -1) {
                         worksManageData[originalIndex].image = thumbUrl;
                     }
-                    addThumbnailLog(`✅ 成功: ${thumbUrl}`, 'success');
+                    addThumbnailLog(`✅ ${item.title}`, 'success');
                     successCount++;
                 } else {
-                    addThumbnailLog(`❌ 失败`, 'error');
+                    addThumbnailLog(`❌ ${item.title}`, 'error');
                     failCount++;
                 }
                 
-                // 延迟一下，避免请求太快
-                await new Promise(resolve => setTimeout(resolve, 600));
+                await new Promise(resolve => setTimeout(resolve, 800));
             }
             
             // 完成后保存到GitHub
