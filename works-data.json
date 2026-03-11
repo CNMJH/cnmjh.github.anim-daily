@@ -133,5 +133,22 @@
       "游戏"
     ],
     "likes": 0
+  },
+  {
+    "id": "work_1773200105399",
+    "title": "印度游戏生物动画师 Mahadev D. 动画作品集",
+    "type": "animation",
+    "subcategory": "creature",
+    "url": "https://www.bilibili.com/video/BV1ZhcjzFEKc/?share_source=copy_web&vd_source=0623765ede2af532f049f4f5d00b56ca",
+    "source": "B站",
+    "artist": "待确认",
+    "date": "2026-03-11",
+    "image": "",
+    "description": "",
+    "tags": [
+      "动物动画",
+      "怪物动画"
+    ],
+    "likes": 0
   }
 ]
