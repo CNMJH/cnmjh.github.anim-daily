@@ -38,20 +38,32 @@ async function getBilibiliThumbnailUrl(bvid) {
 }
 
 // 批量获取缩略图并更新worksData
-async function loadThumbnailsForWorks() {
+async function loadThumbnailsForWorks(autoSave = false) {
     console.log('🎬 开始加载B站视频缩略图...');
     
     let loadedCount = 0;
     let failCount = 0;
+    const maxToLoad = 20; // 每次最多加载20个，避免请求太多
     
-    for (let i = 0; i < worksData.length; i++) {
+    // 检查是否已经加载过缩略图
+    const lastLoadTime = localStorage.getItem('lastThumbnailLoadTime');
+    const now = Date.now();
+    const oneDay = 24 * 60 * 60 * 1000; // 24小时
+    
+    // 如果24小时内已经加载过，就不再自动加载
+    if (autoSave && lastLoadTime && (now - parseInt(lastLoadTime) < oneDay)) {
+        console.log('⏭️ 24小时内已加载过缩略图，跳过自动加载');
+        return;
+    }
+    
+    for (let i = 0; i < worksData.length && loadedCount < maxToLoad; i++) {
         const item = worksData[i];
         
-        // 只处理动画作品分类，且是B站链接
-        if (item.type === 'animation' && item.url && item.url.includes('bilibili.com')) {
+        // 只处理动画作品分类，且是B站链接，且没有image
+        if (item.type === 'animation' && item.url && item.url.includes('bilibili.com') && !item.image) {
             const bvid = extractBvidFromUrl(item.url);
             
-            if (bvid && !item.image) { // 如果没有image才加载
+            if (bvid) {
                 const thumbUrl = await getBilibiliThumbnailUrl(bvid);
                 
                 if (thumbUrl) {
@@ -62,15 +74,30 @@ async function loadThumbnailsForWorks() {
                     failCount++;
                 }
                 
-                // 每加载5个休息一下，避免请求太快
-                if (loadedCount % 5 === 0) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                // 每加载3个休息一下，避免请求太快
+                if (loadedCount % 3 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 800));
                 }
             }
         }
     }
     
+    // 记录最后加载时间
+    if (loadedCount > 0) {
+        localStorage.setItem('lastThumbnailLoadTime', now.toString());
+    }
+    
     console.log(`🎬 缩略图加载完成！成功: ${loadedCount}, 失败: ${failCount}`);
+    
+    // 如果加载成功且需要自动保存，提示用户
+    if (loadedCount > 0 && autoSave) {
+        console.log('💡 提示：缩略图已加载，请去管理员后台保存到GitHub！');
+    }
+    
+    // 重新渲染页面
+    renderWorks(filterWorksData());
+    
+    return { loadedCount, failCount };
 }
 
 // ========== 网站配置 ==========
@@ -1312,6 +1339,14 @@ function applyFilters() {
     generateRecommend();
     preloadImages(worksData); // 预加载图片（性能优化）
     updateStats();
+    
+    // 自动获取缩略图（24小时内只获取一次）
+    loadThumbnailsForWorks(true).then(result => {
+        if (result && result.loadedCount > 0) {
+            console.log(`🎬 自动加载了${result.loadedCount}个缩略图！`);
+        }
+    });
+    
     renderWorks(filterWorksData());
 }
 
@@ -1327,6 +1362,14 @@ function resetFilters() {
     generateRecommend();
     preloadImages(worksData); // 预加载图片（性能优化）
     updateStats();
+    
+    // 自动获取缩略图（24小时内只获取一次）
+    loadThumbnailsForWorks(true).then(result => {
+        if (result && result.loadedCount > 0) {
+            console.log(`🎬 自动加载了${result.loadedCount}个缩略图！`);
+        }
+    });
+    
     renderWorks(filterWorksData());
 }
 
@@ -1412,6 +1455,14 @@ async function loadWorks() {
     generateRecommend();
     preloadImages(worksData); // 预加载图片（性能优化）
     updateStats();
+    
+    // 自动获取缩略图（24小时内只获取一次）
+    loadThumbnailsForWorks(true).then(result => {
+        if (result && result.loadedCount > 0) {
+            console.log(`🎬 自动加载了${result.loadedCount}个缩略图！`);
+        }
+    });
+    
     renderWorks(filterWorksData());
 }
 
@@ -1676,6 +1727,14 @@ const searchWorks = debounce(function() {
     generateRecommend();
     preloadImages(worksData); // 预加载图片（性能优化）
     updateStats();
+    
+    // 自动获取缩略图（24小时内只获取一次）
+    loadThumbnailsForWorks(true).then(result => {
+        if (result && result.loadedCount > 0) {
+            console.log(`🎬 自动加载了${result.loadedCount}个缩略图！`);
+        }
+    });
+    
     renderWorks(filterWorksData());
 }, 300); // 300ms防抖延迟
 
