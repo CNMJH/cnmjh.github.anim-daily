@@ -14,6 +14,25 @@ const defaultSiteConfig = {
         pose: "Pose 参考",
         favorites: "❤️ 我的收藏",
         history: "📜 浏览历史"
+    },
+    categories: {
+        animation: {
+            name: "动画作品",
+            subcategories: {
+                "character": "角色动画",
+                "action": "动作场面",
+                "facial": "表情动画",
+                "creature": "生物动画"
+            }
+        },
+        pose: {
+            name: "Pose 参考",
+            subcategories: {
+                "stand": "站立姿势",
+                "action_pose": "动态姿势",
+                "hand": "手部参考"
+            }
+        }
     }
 };
 
@@ -63,6 +82,12 @@ function applySiteConfig() {
     
     // 更新菜单名称
     updateMenuNames();
+    
+    // 渲染子分类按钮
+    renderSubCategories();
+    
+    // 更新投稿表单的子分类选择
+    updateSubmitSubcategories();
 }
 
 // 更新菜单名称
@@ -88,6 +113,76 @@ function updateMenuNames() {
             }
         }
     });
+    
+    // 重新渲染子分类按钮
+    renderSubCategories();
+}
+
+// 渲染子分类按钮
+function renderSubCategories() {
+    const container = document.getElementById('subCategories');
+    if (!container) return;
+    
+    let html = '<button class="sub-category-btn active" data-subcategory="all">全部</button>';
+    
+    // 根据当前选择的主分类显示对应的子分类
+    if (currentCategory === 'all') {
+        // 显示所有分类的子分类
+        for (const categoryKey in siteConfig.categories) {
+            const category = siteConfig.categories[categoryKey];
+            if (category.subcategories) {
+                for (const subKey in category.subcategories) {
+                    html += `<button class="sub-category-btn" data-subcategory="${subKey}">${category.subcategories[subKey]}</button>`;
+                }
+            }
+        }
+    } else if (siteConfig.categories[currentCategory]) {
+        // 只显示当前主分类的子分类
+        const category = siteConfig.categories[currentCategory];
+        if (category.subcategories) {
+            for (const subKey in category.subcategories) {
+                html += `<button class="sub-category-btn" data-subcategory="${subKey}">${category.subcategories[subKey]}</button>`;
+            }
+        }
+    }
+    
+    container.innerHTML = html;
+    
+    // 重新绑定子分类按钮事件
+    bindSubCategoryEvents();
+}
+
+// 绑定子分类按钮事件
+function bindSubCategoryEvents() {
+    document.querySelectorAll('.sub-category-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.sub-category-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentSubCategory = this.dataset.subcategory;
+            currentTag = ''; // 清空标签选择
+            currentPage = 1;
+            renderTags();
+            updateStats();
+            renderWorks(filterWorksData());
+        });
+    });
+}
+
+// 更新投稿表单的子分类选择
+function updateSubmitSubcategories() {
+    const typeSelect = document.getElementById('submitType');
+    const subcategorySelect = document.getElementById('submitSubcategory');
+    
+    if (!typeSelect || !subcategorySelect) return;
+    
+    const type = typeSelect.value;
+    subcategorySelect.innerHTML = '<option value="">请选择子分类</option>';
+    
+    if (type && siteConfig.categories[type] && siteConfig.categories[type].subcategories) {
+        for (const subKey in siteConfig.categories[type].subcategories) {
+            subcategorySelect.innerHTML += `<option value="${subKey}">${siteConfig.categories[type].subcategories[subKey]}</option>`;
+        }
+    }
 }
 
 // ========== 卡片样式配置 ==========
@@ -384,16 +479,28 @@ async function handleSubmit(event) {
 }
 
 function getSubcategoryName(subcategory) {
-    const names = {
-        'character': '角色动画',
-        'action': '动作场面',
-        'facial': '表情动画',
-        'creature': '生物动画',
-        'stand': '站立姿势',
-        'action_pose': '动态姿势',
-        'hand': '手部参考'
-    };
-    return names[subcategory] || subcategory;
+    // 从siteConfig中查找子分类名称
+    for (const categoryKey in siteConfig.categories) {
+        const category = siteConfig.categories[categoryKey];
+        if (category.subcategories && category.subcategories[subcategory]) {
+            return category.subcategories[subcategory];
+        }
+    }
+    // 如果找不到，返回原始值
+    return subcategory;
+}
+
+// 获取主分类名称
+function getCategoryName(categoryKey) {
+    if (siteConfig.categories && siteConfig.categories[categoryKey]) {
+        return siteConfig.categories[categoryKey].name;
+    }
+    return categoryKey;
+}
+
+// 获取所有分类信息
+function getAllCategories() {
+    return siteConfig.categories || defaultSiteConfig.categories;
 }
 
 // 从URL获取来源名称
@@ -1498,6 +1605,10 @@ document.querySelectorAll('.category-btn').forEach(btn => {
         currentTag = ''; // 清空标签选择
         currentPage = 1;
         
+        // 重新渲染子分类按钮
+        currentSubCategory = 'all';
+        renderSubCategories();
+        
         // 在"我的收藏"和"浏览历史"界面隐藏热门标签
         const tagsSection = document.getElementById('tagsSection');
         if (currentCategory === 'favorites' || currentCategory === 'history') {
@@ -1510,20 +1621,6 @@ document.querySelectorAll('.category-btn').forEach(btn => {
         
         renderFolders(); // 渲染收藏夹选择器
         renderHistorySection(); // 渲染历史记录区域
-        updateStats();
-        renderWorks(filterWorksData());
-    });
-});
-
-// 初始化子分类按钮
-document.querySelectorAll('.sub-category-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        document.querySelectorAll('.sub-category-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        currentSubCategory = this.dataset.subcategory;
-        currentTag = ''; // 清空标签选择
-        currentPage = 1;
-        renderTags();
         updateStats();
         renderWorks(filterWorksData());
     });
@@ -1555,23 +1652,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     if (typeSelect && subcategorySelect) {
         typeSelect.addEventListener('change', function() {
-            const type = this.value;
-            subcategorySelect.innerHTML = '<option value="">请选择子分类</option>';
-            
-            if (type === 'animation') {
-                subcategorySelect.innerHTML += `
-                    <option value="character">角色动画</option>
-                    <option value="action">动作场面</option>
-                    <option value="facial">表情动画</option>
-                    <option value="creature">生物动画</option>
-                `;
-            } else if (type === 'pose') {
-                subcategorySelect.innerHTML += `
-                    <option value="stand">站立姿势</option>
-                    <option value="action_pose">动态姿势</option>
-                    <option value="hand">手部参考</option>
-                `;
-            }
+            updateSubmitSubcategories();
         });
     }
 });

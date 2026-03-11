@@ -28,6 +28,21 @@
         #site-section .form-group input::placeholder {
             color: #94a3b8 !important;
         }
+        
+        /* 分类管理输入框样式 */
+        .category-name-input,
+        .subcategory-key-input,
+        .subcategory-name-input {
+            color: #1e293b !important;
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+        
+        .category-name-input::placeholder,
+        .subcategory-key-input::placeholder,
+        .subcategory-name-input::placeholder {
+            color: #94a3b8 !important;
+        }
 
         .admin-container {
             max-width: 1400px;
@@ -404,6 +419,18 @@
                 <div class="form-group">
                     <label>浏览历史</label>
                     <input type="text" id="menuHistory" placeholder="📜 浏览历史">
+                </div>
+            </div>
+            
+            <div style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+                <h3 style="margin-bottom: 20px; color: #1e293b;">📁 分类管理</h3>
+                
+                <div style="margin-bottom: 20px;">
+                    <button onclick="addCategory()" style="padding: 8px 20px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">+ 添加主分类</button>
+                </div>
+                
+                <div id="categoriesContainer" style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- 分类列表将通过JS动态加载 -->
                 </div>
             </div>
             
@@ -813,6 +840,25 @@
                 pose: "Pose 参考",
                 favorites: "❤️ 我的收藏",
                 history: "📜 浏览历史"
+            },
+            categories: {
+                animation: {
+                    name: "动画作品",
+                    subcategories: {
+                        "character": "角色动画",
+                        "action": "动作场面",
+                        "facial": "表情动画",
+                        "creature": "生物动画"
+                    }
+                },
+                pose: {
+                    name: "Pose 参考",
+                    subcategories: {
+                        "stand": "站立姿势",
+                        "action_pose": "动态姿势",
+                        "hand": "手部参考"
+                    }
+                }
             }
         };
 
@@ -842,9 +888,185 @@
                 document.getElementById('menuFavorites').value = config.menuNames?.favorites || '';
                 document.getElementById('menuHistory').value = config.menuNames?.history || '';
                 
+                // 渲染分类管理
+                renderCategories(config.categories || defaultSiteConfig.categories);
+                
             } catch (e) {
                 console.error('加载网站配置失败:', e);
             }
+        }
+
+        // 渲染分类管理界面
+        function renderCategories(categories) {
+            const container = document.getElementById('categoriesContainer');
+            container.innerHTML = '';
+            
+            Object.keys(categories).forEach(categoryKey => {
+                const category = categories[categoryKey];
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category-item';
+                categoryDiv.style.cssText = 'background: white; padding: 20px; border-radius: 10px; border: 1px solid #e2e8f0;';
+                categoryDiv.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.2rem; font-weight: 600; color: #1e293b;">${categoryKey === 'animation' ? '🎬' : '🧍'}</span>
+                            <input type="text" value="${category.name}" 
+                                   class="category-name-input" 
+                                   data-category="${categoryKey}"
+                                   placeholder="主分类名称"
+                                   style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 1rem; font-weight: 600;">
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="addSubcategory('${categoryKey}')" 
+                                    style="padding: 6px 12px; background: #dbeafe; color: #1d4ed8; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">
+                                + 添加子分类
+                            </button>
+                            <button onclick="deleteCategory('${categoryKey}')" 
+                                    style="padding: 6px 12px; background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">
+                                🗑️ 删除
+                            </button>
+                        </div>
+                    </div>
+                    <div class="subcategories-container" data-category="${categoryKey}" style="display: flex; flex-direction: column; gap: 10px; margin-left: 40px;">
+                        ${Object.keys(category.subcategories).map(subKey => `
+                            <div class="subcategory-item" style="display: flex; gap: 10px; align-items: center;">
+                                <span style="color: #64748b;">🔑</span>
+                                <input type="text" value="${subKey}" 
+                                       class="subcategory-key-input"
+                                       data-category="${categoryKey}"
+                                       data-old-key="${subKey}"
+                                       placeholder="子分类键名（英文）"
+                                       style="padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.9rem; width: 150px;">
+                                <span style="color: #94a3b8;">→</span>
+                                <input type="text" value="${category.subcategories[subKey]}" 
+                                       class="subcategory-name-input"
+                                       data-category="${categoryKey}"
+                                       data-subkey="${subKey}"
+                                       placeholder="子分类显示名称"
+                                       style="padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.9rem; flex: 1;">
+                                <button onclick="deleteSubcategory('${categoryKey}', '${subKey}')" 
+                                        style="padding: 4px 10px; background: #fee2e2; color: #dc2626; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                                    🗑️
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(categoryDiv);
+            });
+        }
+
+        // 添加主分类
+        function addCategory() {
+            const categoryKey = prompt('请输入主分类键名（英文，例如：illustration）：');
+            if (!categoryKey || !categoryKey.trim()) {
+                return;
+            }
+            
+            const categoryName = prompt('请输入主分类显示名称：');
+            if (!categoryName || !categoryName.trim()) {
+                return;
+            }
+            
+            // 获取当前配置
+            const currentConfig = getCurrentSiteConfigFromForm();
+            if (!currentConfig.categories[categoryKey]) {
+                currentConfig.categories[categoryKey] = {
+                    name: categoryName,
+                    subcategories: {}
+                };
+                renderCategories(currentConfig.categories);
+            } else {
+                alert('该分类键名已存在！');
+            }
+        }
+
+        // 删除主分类
+        function deleteCategory(categoryKey) {
+            if (!confirm(`确定要删除主分类 "${categoryKey}" 及其所有子分类吗？`)) {
+                return;
+            }
+            
+            const currentConfig = getCurrentSiteConfigFromForm();
+            delete currentConfig.categories[categoryKey];
+            renderCategories(currentConfig.categories);
+        }
+
+        // 添加子分类
+        function addSubcategory(categoryKey) {
+            const subKey = prompt('请输入子分类键名（英文，例如：character）：');
+            if (!subKey || !subKey.trim()) {
+                return;
+            }
+            
+            const subName = prompt('请输入子分类显示名称：');
+            if (!subName || !subName.trim()) {
+                return;
+            }
+            
+            const currentConfig = getCurrentSiteConfigFromForm();
+            if (!currentConfig.categories[categoryKey].subcategories[subKey]) {
+                currentConfig.categories[categoryKey].subcategories[subKey] = subName;
+                renderCategories(currentConfig.categories);
+            } else {
+                alert('该子分类键名已存在！');
+            }
+        }
+
+        // 删除子分类
+        function deleteSubcategory(categoryKey, subKey) {
+            if (!confirm(`确定要删除子分类 "${subKey}" 吗？`)) {
+                return;
+            }
+            
+            const currentConfig = getCurrentSiteConfigFromForm();
+            delete currentConfig.categories[categoryKey].subcategories[subKey];
+            renderCategories(currentConfig.categories);
+        }
+
+        // 从表单获取当前网站配置
+        function getCurrentSiteConfigFromForm() {
+            const config = {
+                siteTitle: document.getElementById('siteTitle').value,
+                siteSubtitle: document.getElementById('siteSubtitle').value,
+                footerText: document.getElementById('footerText').value,
+                menuNames: {
+                    all: document.getElementById('menuAll').value,
+                    animation: document.getElementById('menuAnimation').value,
+                    pose: document.getElementById('menuPose').value,
+                    favorites: document.getElementById('menuFavorites').value,
+                    history: document.getElementById('menuHistory').value
+                },
+                categories: {}
+            };
+            
+            // 从分类管理界面获取分类配置
+            const categoryItems = document.querySelectorAll('.category-item');
+            categoryItems.forEach(item => {
+                const categoryKeyInput = item.querySelector('.category-name-input');
+                const categoryKey = categoryKeyInput.dataset.category;
+                const categoryName = categoryKeyInput.value;
+                
+                config.categories[categoryKey] = {
+                    name: categoryName,
+                    subcategories: {}
+                };
+                
+                const subItems = item.querySelectorAll('.subcategory-item');
+                subItems.forEach(subItem => {
+                    const keyInput = subItem.querySelector('.subcategory-key-input');
+                    const nameInput = subItem.querySelector('.subcategory-name-input');
+                    const oldKey = keyInput.dataset.oldKey;
+                    const newKey = keyInput.value;
+                    const subName = nameInput.value;
+                    
+                    if (newKey && subName) {
+                        config.categories[categoryKey].subcategories[newKey] = subName;
+                    }
+                });
+            });
+            
+            return config;
         }
 
         // 获取site-config.json的SHA
@@ -871,18 +1093,7 @@
 
         // 保存网站配置到GitHub
         async function saveSiteConfig() {
-            const config = {
-                siteTitle: document.getElementById('siteTitle').value,
-                siteSubtitle: document.getElementById('siteSubtitle').value,
-                footerText: document.getElementById('footerText').value,
-                menuNames: {
-                    all: document.getElementById('menuAll').value,
-                    animation: document.getElementById('menuAnimation').value,
-                    pose: document.getElementById('menuPose').value,
-                    favorites: document.getElementById('menuFavorites').value,
-                    history: document.getElementById('menuHistory').value
-                }
-            };
+            const config = getCurrentSiteConfigFromForm();
             
             // 检查GitHub配置
             if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo) {
@@ -1017,6 +1228,9 @@
                     document.getElementById('menuPose').value = defaultSiteConfig.menuNames.pose;
                     document.getElementById('menuFavorites').value = defaultSiteConfig.menuNames.favorites;
                     document.getElementById('menuHistory').value = defaultSiteConfig.menuNames.history;
+                    
+                    // 重新渲染分类管理
+                    renderCategories(defaultSiteConfig.categories);
                     
                     alert('✅ 已重置为默认网站配置并保存到GitHub！\n\n所有用户刷新网站即可看到效果！');
                 } else {

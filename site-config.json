@@ -8,5 +8,24 @@
     "pose": "Pose 参考",
     "favorites": "❤️ 我的收藏",
     "history": "📜 浏览历史"
+  },
+  "categories": {
+    "animation": {
+      "name": "动画作品",
+      "subcategories": {
+        "character": "角色动画",
+        "action": "动作场面",
+        "facial": "表情动画",
+        "creature": "生物动画"
+      }
+    },
+    "pose": {
+      "name": "Pose 参考",
+      "subcategories": {
+        "stand": "站立姿势",
+        "action_pose": "动态姿势",
+        "hand": "手部参考"
+      }
+    }
   }
 }
