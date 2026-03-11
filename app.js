@@ -924,10 +924,14 @@ function createNewFolder() {
 // 修改filterWorksData，支持按收藏夹筛选
 // （修改filterWorksData函数中的收藏筛选部分）
 
-// 提取所有标签
-function getAllTags() {
+// 提取所有标签（可按分类过滤）
+function getAllTags(type = null) {
     const tagSet = new Set();
     worksData.forEach(item => {
+        // 如果指定了type，只统计该分类的标签
+        if (type && item.type !== type) {
+            return;
+        }
         if (item.tags && Array.isArray(item.tags)) {
             item.tags.forEach(tag => tagSet.add(tag));
         }
@@ -961,7 +965,16 @@ function renderTags() {
     const tagsList = document.getElementById('tagsList');
     const tagsSection = document.getElementById('tagsSection');
     const toggleBtn = document.getElementById('tagsToggleBtn');
-    const allTags = getAllTags();
+    
+    // 根据当前分类过滤标签
+    let tagsType = null;
+    if (currentCategory === 'animation') {
+        tagsType = 'animation';
+    } else if (currentCategory === 'pose') {
+        tagsType = 'pose';
+    }
+    
+    const allTags = getAllTags(tagsType);
     
     // 在"我的收藏"和"浏览历史"界面隐藏热门标签
     if (currentCategory === 'favorites' || currentCategory === 'history') {
