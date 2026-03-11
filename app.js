@@ -1728,6 +1728,144 @@ function renderWorks(works) {
     });
     
     container.innerHTML = html;
+    
+    // 绑定卡片hover事件，自动获取缩略图
+    bindCardHoverEvents();
+}
+
+// 绑定卡片hover事件，自动获取缩略图
+function bindCardHoverEvents() {
+    const cards = document.querySelectorAll('.work-card');
+    
+    cards.forEach((card, index) => {
+        // 获取当前页对应的作品数据
+        const filtered = filterWorksData();
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        const workIndex = startIndex + index;
+        const item = filtered[workIndex];
+        
+        if (!item) return;
+        
+        // 只给动画作品且没有缩略图的卡片添加hover事件
+        if (item.type === 'animation' && item.url && item.url.includes('bilibili.com') && !item.image) {
+            let loaded = false; // 标记是否已经加载过
+            
+            card.addEventListener('mouseenter', async function() {
+                if (loaded) return; // 已经加载过就不再加载
+                
+                const bvid = extractBvidFromUrl(item.url);
+                if (!bvid) return;
+                
+                console.log(`🖱️ Hover卡片，开始获取缩略图: ${item.title}`);
+                loaded = true; // 标记为已加载，避免重复请求
+                
+                const thumbUrl = await getBilibiliThumbnailUrl(bvid);
+                
+                if (thumbUrl) {
+                    // 更新worksData
+                    const originalIndex = worksData.findIndex(w => w.url === item.url);
+                    if (originalIndex !== -1) {
+                        worksData[originalIndex].image = thumbUrl;
+                        
+                        // 直接更新DOM中的图片
+                        const imageContainer = card.querySelector('.work-card-image');
+                        if (imageContainer) {
+                            const existingImg = imageContainer.querySelector('img');
+                            if (!existingImg) {
+                                const img = document.createElement('img');
+                                img.src = thumbUrl;
+                                img.alt = item.title;
+                                img.draggable = false;
+                                img.style.pointerEvents = 'none';
+                                imageContainer.style.background = ''; // 移除背景色
+                                imageContainer.insertBefore(img, imageContainer.firstChild);
+                                console.log(`✅ 缩略图加载成功并显示: ${item.title}`);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+}
+
+// ========== B站缩略图相关 ==========
+// 从B站URL提取BV号
+function extractBvidFromUrl(url) {
+    if (!url) return null;
+    
+    // 匹配 BV号（格式：BVxxxxxxxxxx）
+    const bvMatch = url.match(/BV[a-zA-Z0-9]+/);
+    if (bvMatch) {
+        return bvMatch[0];
+    }
+    
+    return null;
+}
+
+// 获取B站缩略图URL（小图：320x180）
+function getBilibiliThumbnailUrl(bvid) {
+    return new Promise((resolve, reject) => {
+        if (!bvid) {
+            resolve(null);
+            return;
+        }
+        
+        // 创建一个唯一的回调函数名
+        const callbackName = 'bilibiliCallback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
+        // 创建script标签
+        const script = document.createElement('script');
+        const apiUrl = `https://api.bilibili.com/x/player/pagelist?bvid=${bvid}&jsonp=jsonp&callback=${callbackName}`;
+        
+        script.src = apiUrl;
+        
+        // 定义回调函数
+        window[callbackName] = function(data) {
+            try {
+                if (data && data.data && data.data.length > 0 && data.data[0].pic) {
+                    // 返回压缩后的小图（320x180）
+                    resolve(data.data[0].pic + '@320w_180h.jpg');
+                } else {
+                    resolve(null);
+                }
+            } catch (e) {
+                console.warn('解析B站缩略图失败:', e);
+                resolve(null);
+            } finally {
+                // 清理
+                delete window[callbackName];
+                if (script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+            }
+        };
+        
+        // 错误处理
+        script.onerror = function() {
+            console.warn('获取B站缩略图失败（网络错误）');
+            delete window[callbackName];
+            if (script.parentNode) {
+                script.parentNode.removeChild(script);
+            }
+            resolve(null);
+        };
+        
+        // 添加到页面
+        document.head.appendChild(script);
+        
+        // 超时处理
+        setTimeout(() => {
+            if (window[callbackName]) {
+                console.warn('获取B站缩略图超时');
+                delete window[callbackName];
+                if (script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+                resolve(null);
+            }
+        }, 10000); // 10秒超时
+    });
 }
 
 // HTML 转义函数
