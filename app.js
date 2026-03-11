@@ -811,7 +811,7 @@ const categoryNames = {
     'hand': '手部参考'
 };
 
-let currentCategory = 'all';
+let currentCategory = 'animation';
 let currentSubCategory = 'all';
 let searchQuery = '';
 let currentTag = ''; // 当前选中的标签
