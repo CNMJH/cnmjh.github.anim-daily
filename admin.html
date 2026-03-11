@@ -2574,7 +2574,7 @@
             };
 
             // 如果是动画作品且是B站链接，自动获取缩略图
-            if (jsonData.type === 'animation' &amp;&amp; jsonData.url &amp;&amp; jsonData.url.includes('bilibili.com') &amp;&amp; !jsonData.image) {
+            if (jsonData.type === 'animation' && jsonData.url && jsonData.url.includes('bilibili.com') && !jsonData.image) {
                 console.log('🎬 自动获取缩略图...');
                 try {
                     const thumbUrl = await fetchThumbnailForSingleWork(jsonData);
