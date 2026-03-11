@@ -98,5 +98,22 @@
       "游戏动画"
     ],
     "likes": 0
+  },
+  {
+    "id": "work_1773192562843",
+    "title": "瑞典动画师 Ha_ru 射击动画练习",
+    "type": "animation",
+    "subcategory": "character",
+    "url": "https://www.bilibili.com/video/BV1bit1zYE3Z/?share_source=copy_web&vd_source=0623765ede2af532f049f4f5d00b56ca",
+    "source": "B站",
+    "artist": "待确认",
+    "date": "2026-03-11",
+    "image": "",
+    "description": "",
+    "tags": [
+      "角色动画",
+      "射击动画"
+    ],
+    "likes": 0
   }
 ]
