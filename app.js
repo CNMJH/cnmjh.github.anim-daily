@@ -346,7 +346,7 @@ function applyCardStyleConfig() {
     }
     
     // 每页行数
-    const ITEMS_PER_PAGE = cardStyleConfig.columns * cardStyleConfig.maxRows;
+    ITEMS_PER_PAGE = cardStyleConfig.columns * cardStyleConfig.maxRows;
     window.ITEMS_PER_PAGE = ITEMS_PER_PAGE;
     
     styleEl.textContent = css;
@@ -392,7 +392,7 @@ let filterState = {
 };
 
 // 分页配置
-const ITEMS_PER_PAGE = 9;
+let ITEMS_PER_PAGE = defaultCardStyle.columns * defaultCardStyle.maxRows;
 let currentPage = 1;
 let totalPages = 1;
 
