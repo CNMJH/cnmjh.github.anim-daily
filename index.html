@@ -83,7 +83,10 @@
 
         <!-- 收藏夹选择器 -->
         <div class="folders-section" id="foldersSection" style="display:none;">
-            <div class="folders-title">📁 收藏夹</div>
+            <div class="folders-title" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>📁 收藏夹</span>
+                <button class="edit-folders-btn" onclick="toggleFolderEditMode()" id="editFoldersBtn" style="padding: 6px 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s;">✏️ 编辑</button>
+            </div>
             <div class="folders-list" id="foldersList">
                 <!-- 收藏夹将通过JS动态加载 -->
             </div>

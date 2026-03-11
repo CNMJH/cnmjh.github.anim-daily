@@ -367,6 +367,9 @@ let favorites = {
     currentFolder: 'all'
 };
 
+// 收藏夹编辑模式
+let folderEditMode = false;
+
 // 浏览历史记录
 let history = [];
 const MAX_HISTORY = 50; // 最多保存50条历史记录
@@ -889,6 +892,26 @@ function switchFolder(folderId) {
     }
 }
 
+// 切换收藏夹编辑模式
+function toggleFolderEditMode() {
+    folderEditMode = !folderEditMode;
+    const editBtn = document.getElementById('editFoldersBtn');
+    
+    if (folderEditMode) {
+        editBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        editBtn.style.color = '#fff';
+        editBtn.style.borderColor = 'transparent';
+        editBtn.textContent = '✓ 完成';
+    } else {
+        editBtn.style.background = '#f1f5f9';
+        editBtn.style.color = '#64748b';
+        editBtn.style.borderColor = '#e2e8f0';
+        editBtn.textContent = '✏️ 编辑';
+    }
+    
+    renderFolders();
+}
+
 // 渲染收藏夹列表
 function renderFolders() {
     const foldersList = document.getElementById('foldersList');
@@ -908,18 +931,21 @@ function renderFolders() {
         const count = folder.works.length;
         const isDefault = folder.id === 'all';
         
+        // 编辑模式下显示拖拽手柄、重命名和删除按钮
+        const showEditControls = folderEditMode && !isDefault;
+        
         html += `
             <div class="folder-item" 
                  data-folder-id="${folder.id}" 
                  data-index="${index}"
-                 draggable="${!isDefault}"
-                 ondragstart="handleFolderDragStart(event, '${folder.id}', ${index})"
-                 ondragend="handleFolderDragEnd(event)"
-                 ondragover="handleFolderDragOver(event)"
-                 ondragleave="handleFolderDragLeave(event)"
-                 ondrop="handleFolderDrop(event, ${index})"
+                 draggable="${showEditControls}"
+                 ondragstart="${showEditControls ? `handleFolderDragStart(event, '${folder.id}', ${index})` : ''}"
+                 ondragend="${showEditControls ? 'handleFolderDragEnd(event)' : ''}"
+                 ondragover="${showEditControls ? 'handleFolderDragOver(event)' : ''}"
+                 ondragleave="${showEditControls ? 'handleFolderDragLeave(event)' : ''}"
+                 ondrop="${showEditControls ? `handleFolderDrop(event, ${index})` : ''}"
                  style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; transition: all 0.2s;">
-                ${!isDefault ? `<span class="folder-drag-handle">⋮⋮</span>` : `<span style="width: 26px;"></span>`}
+                ${showEditControls ? `<span class="folder-drag-handle">⋮⋮</span>` : `<span style="width: 26px;"></span>`}
                 <button class="folder-btn ${isActive ? 'active' : ''}" 
                         onclick="switchFolder('${folder.id}')" 
                         ondragover="handleDragOver(event)" 
@@ -928,7 +954,7 @@ function renderFolders() {
                         style="flex: 1; text-align: left;">
                     ${escapeHtml(folder.name)} (${count})
                 </button>
-                ${!isDefault ? `
+                ${showEditControls ? `
                     <button style="padding: 6px 10px; background: #dbeafe; color: #3b82f6; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem;" onclick="renameFolder('${folder.id}')">✏️</button>
                     <button style="padding: 6px 10px; background: #fee2e2; color: #ef4444; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem;" onclick="deleteFolder('${folder.id}')">🗑️</button>
                 ` : ''}
