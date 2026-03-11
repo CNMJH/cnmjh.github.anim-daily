@@ -1448,77 +1448,44 @@
         }
 
         // 获取B站缩略图URL（小图：320x180）
-        function getBilibiliThumbnailUrl(bvid) {
-            return new Promise((resolve, reject) => {
-                if (!bvid) {
-                    console.log('❌ 无BV号，跳过');
-                    resolve(null);
-                    return;
+        async function getBilibiliThumbnailUrl(bvid) {
+            if (!bvid) {
+                console.log('❌ 无BV号，跳过');
+                return null;
+            }
+            
+            console.log('🎬 正在获取缩略图，BV号:', bvid);
+            
+            try {
+                // 使用CORS代理来避免跨域问题
+                const apiUrl = `https://api.bilibili.com/x/player/pagelist?bvid=${bvid}`;
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
+                
+                console.log('🌐 API URL (通过代理):', proxyUrl);
+                
+                const response = await fetch(proxyUrl);
+                
+                if (!response.ok) {
+                    console.log('❌ API请求失败，状态码:', response.status);
+                    return null;
                 }
                 
-                console.log('🎬 正在获取缩略图，BV号:', bvid);
+                const data = await response.json();
+                console.log('📦 收到B站API响应:', data);
                 
-                // 创建一个唯一的回调函数名
-                const callbackName = 'bilibiliCallback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                
-                // 创建script标签
-                const script = document.createElement('script');
-                const apiUrl = `https://api.bilibili.com/x/player/pagelist?bvid=${bvid}&jsonp=jsonp&callback=${callbackName}`;
-                
-                console.log('🌐 API URL:', apiUrl);
-                
-                script.src = apiUrl;
-                
-                // 定义回调函数
-                window[callbackName] = function(data) {
-                    try {
-                        console.log('📦 收到B站API响应:', data);
-                        if (data && data.data && data.data.length > 0 && data.data[0].pic) {
-                            // 返回压缩后的小图（320x180）
-                            const thumbUrl = data.data[0].pic + '@320w_180h.jpg';
-                            console.log('✅ 缩略图URL:', thumbUrl);
-                            resolve(thumbUrl);
-                        } else {
-                            console.log('❌ API响应中没有缩略图');
-                            resolve(null);
-                        }
-                    } catch (e) {
-                        console.warn('❌ 解析B站缩略图失败:', e);
-                        resolve(null);
-                    } finally {
-                        // 清理
-                        delete window[callbackName];
-                        if (script.parentNode) {
-                            script.parentNode.removeChild(script);
-                        }
-                    }
-                };
-                
-                // 错误处理
-                script.onerror = function() {
-                    console.warn('❌ 获取B站缩略图失败（网络错误）');
-                    delete window[callbackName];
-                    if (script.parentNode) {
-                        script.parentNode.removeChild(script);
-                    }
-                    resolve(null);
-                };
-                
-                // 添加到页面
-                document.head.appendChild(script);
-                
-                // 超时处理
-                setTimeout(() => {
-                    if (window[callbackName]) {
-                        console.warn('❌ 获取B站缩略图超时');
-                        delete window[callbackName];
-                        if (script.parentNode) {
-                            script.parentNode.removeChild(script);
-                        }
-                        resolve(null);
-                    }
-                }, 15000); // 15秒超时
-            });
+                if (data && data.data && data.data.length > 0 && data.data[0].pic) {
+                    // 返回压缩后的小图（320x180）
+                    const thumbUrl = data.data[0].pic + '@320w_180h.jpg';
+                    console.log('✅ 缩略图URL:', thumbUrl);
+                    return thumbUrl;
+                } else {
+                    console.log('❌ API响应中没有缩略图');
+                    return null;
+                }
+            } catch (e) {
+                console.warn('❌ 获取B站缩略图失败:', e);
+                return null;
+            }
         }
 
         // 添加缩略图进度日志
@@ -2272,6 +2239,59 @@
             saveGithubConfig();
             alert('✅ GitHub配置已保存！');
             closeTokenModal();
+        }
+
+        // 保存works-data.json到GitHub
+        async function saveWorksData(data, commitMessage = '更新作品数据') {
+            // 检查GitHub配置
+            if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo) {
+                throw new Error('请先配置GitHub！点击右上角"⚙️ 配置GitHub"');
+            }
+            
+            console.log('正在保存作品数据到GitHub...');
+            
+            // 获取文件SHA
+            let sha = null;
+            try {
+                sha = await getFileSha();
+                console.log('获取到的SHA:', sha);
+            } catch (e) {
+                console.log('文件不存在，将创建新文件');
+            }
+            
+            const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+            const updateUrl = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/works-data.json`;
+            
+            console.log('正在更新GitHub文件...');
+            const response = await fetch(updateUrl, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${githubConfig.token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: commitMessage,
+                    content: content,
+                    sha: sha,
+                    branch: githubConfig.branch
+                })
+            });
+            
+            console.log('GitHub响应状态:', response.status, response.statusText);
+            
+            if (!response.ok) {
+                let errorMsg = '保存失败';
+                try {
+                    const errorData = await response.json();
+                    errorMsg = errorData.message || errorMsg;
+                } catch (e) {
+                    errorMsg = response.statusText || errorMsg;
+                }
+                throw new Error(errorMsg);
+            }
+            
+            console.log('保存成功！');
         }
 
         async function getFileSha() {
