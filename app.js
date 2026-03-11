@@ -305,13 +305,13 @@ function applyCardStyleConfig() {
     const columns = cardStyleConfig.columns;
     let gridTemplateColumns = '';
     if (columns === 2) {
-        gridTemplateColumns = 'repeat(auto-fit, minmax(450px, 1fr))';
+        gridTemplateColumns = 'repeat(2, 1fr)';
     } else if (columns === 3) {
-        gridTemplateColumns = 'repeat(auto-fit, minmax(350px, 1fr))';
+        gridTemplateColumns = 'repeat(3, 1fr)';
     } else if (columns === 4) {
-        gridTemplateColumns = 'repeat(auto-fit, minmax(280px, 1fr))';
+        gridTemplateColumns = 'repeat(4, 1fr)';
     } else if (columns === 5) {
-        gridTemplateColumns = 'repeat(auto-fit, minmax(220px, 1fr))';
+        gridTemplateColumns = 'repeat(5, 1fr)';
     }
     
     if (gridTemplateColumns) {
