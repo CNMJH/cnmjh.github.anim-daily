@@ -234,6 +234,21 @@
         .copy-btn:hover {
             background: #2563eb;
         }
+        .add-btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+        }
     </style>
 </head>
 <body>
@@ -426,7 +441,7 @@
                 <h3 style="margin-bottom: 20px; color: #1e293b;">📁 分类管理</h3>
                 
                 <div style="margin-bottom: 20px;">
-                    <button onclick="addCategory()" style="padding: 8px 20px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">+ 添加主分类</button>
+                    <button onclick="addCategory()" style="padding: 10px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.3s;">+ 添加主分类</button>
                 </div>
                 
                 <div id="categoriesContainer" style="display: flex; flex-direction: column; gap: 20px;">
