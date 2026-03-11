@@ -3,6 +3,76 @@
 // 新闻数据（从 JSON 文件加载）
 let worksData = [];
 
+// ========== B站缩略图相关 ==========
+// 从B站URL提取BV号
+function extractBvidFromUrl(url) {
+    if (!url) return null;
+    
+    // 匹配 BV号（格式：BVxxxxxxxxxx）
+    const bvMatch = url.match(/BV[a-zA-Z0-9]+/);
+    if (bvMatch) {
+        return bvMatch[0];
+    }
+    
+    return null;
+}
+
+// 获取B站缩略图URL（小图：320x180）
+async function getBilibiliThumbnailUrl(bvid) {
+    if (!bvid) return null;
+    
+    try {
+        const apiUrl = `https://api.bilibili.com/x/player/pagelist?bvid=${bvid}&jsonp=jsonp`;
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        
+        if (data && data.data && data.data.length > 0 && data.data[0].pic) {
+            // 返回压缩后的小图（320x180）
+            return data.data[0].pic + '@320w_180h.jpg';
+        }
+    } catch (e) {
+        console.warn('获取B站缩略图失败:', e);
+    }
+    
+    return null;
+}
+
+// 批量获取缩略图并更新worksData
+async function loadThumbnailsForWorks() {
+    console.log('🎬 开始加载B站视频缩略图...');
+    
+    let loadedCount = 0;
+    let failCount = 0;
+    
+    for (let i = 0; i < worksData.length; i++) {
+        const item = worksData[i];
+        
+        // 只处理动画作品分类，且是B站链接
+        if (item.type === 'animation' && item.url && item.url.includes('bilibili.com')) {
+            const bvid = extractBvidFromUrl(item.url);
+            
+            if (bvid && !item.image) { // 如果没有image才加载
+                const thumbUrl = await getBilibiliThumbnailUrl(bvid);
+                
+                if (thumbUrl) {
+                    worksData[i].image = thumbUrl;
+                    loadedCount++;
+                    console.log(`✅ 加载缩略图成功 (${loadedCount}): ${item.title}`);
+                } else {
+                    failCount++;
+                }
+                
+                // 每加载5个休息一下，避免请求太快
+                if (loadedCount % 5 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+        }
+    }
+    
+    console.log(`🎬 缩略图加载完成！成功: ${loadedCount}, 失败: ${failCount}`);
+}
+
 // ========== 网站配置 ==========
 const defaultSiteConfig = {
     siteTitle: "动画每日一刷",
@@ -1555,8 +1625,8 @@ function renderWorks(works) {
              draggable="true" 
              ondragstart="handleDragStart(event, '${workId.replace(/'/g, "\\'")}')"
              style="cursor:pointer">
-            <div class="work-card-image" style="pointer-events: none; ${!item.image || item.image.trim() === '' ? 'background: #1a1a2e;' : ''}">
-                ${item.image && item.image.trim() !== '' ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" draggable="false">` : ''}
+            <div class="work-card-image" style="pointer-events: none; ${!item.image || item.image.trim() === '' || item.type !== 'animation' ? 'background: #1a1a2e;' : ''}">
+                ${item.type === 'animation' && item.image && item.image.trim() !== '' ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" draggable="false">` : ''}
                 <span class="work-type-tag ${item.type}">${typeText}</span>
                 <button class="favorite-btn ${favClass}" onclick="toggleFavorite('${workId.replace(/'/g, "\\'")}', event)" title="收藏" style="pointer-events: auto;">${favIcon}</button>
             </div>

@@ -199,6 +199,10 @@ body.light-theme .report-btn {
     background: #f1f5f9;
 }
 
+body.light-theme .work-card-image {
+    background: #f8fafc;
+}
+
 body.light-theme .report-btn:hover {
     color: #ef4444;
     background: #fef2f2;
@@ -528,6 +532,10 @@ body.light-theme .like-btn .like-count {
 body.light-theme .report-btn {
     color: #64748b;
     background: #f1f5f9;
+}
+
+body.light-theme .work-card-image {
+    background: #f8fafc;
 }
 
 body.light-theme .report-btn:hover {
