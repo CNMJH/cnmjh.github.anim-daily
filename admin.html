@@ -1448,48 +1448,39 @@
         }
 
         // 获取B站缩略图URL（小图：320x180）
-        function getBilibiliThumbnailUrl(bvid) {
-            return new Promise((resolve) => {
-                if (!bvid) {
-                    resolve(null);
-                    return;
+        async function getBilibiliThumbnailUrl(bvid) {
+            if (!bvid) return null;
+            
+            try {
+                // 使用免费的CORS代理
+                const apiUrl = `https://api.bilibili.com/x/player/pagelist?bvid=${bvid}`;
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+                
+                const response = await fetch(proxyUrl);
+                
+                if (!response.ok) {
+                    console.log('代理请求失败，尝试另一个代理...');
+                    // 尝试另一个代理
+                    const proxyUrl2 = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
+                    const response2 = await fetch(proxyUrl2);
+                    if (!response2.ok) return null;
+                    
+                    const data2 = await response2.json();
+                    if (data2 && data2.data && data2.data.length > 0 && data2.data[0].pic) {
+                        return data2.data[0].pic + '@320w_180h.jpg';
+                    }
+                    return null;
                 }
                 
-                const callbackName = 'bili_' + Date.now() + Math.random().toString(36).substr(2, 9);
-                const script = document.createElement('script');
-                
-                window[callbackName] = function(data) {
-                    try {
-                        if (data && data.data && data.data.length > 0 && data.data[0].pic) {
-                            resolve(data.data[0].pic + '@320w_180h.jpg');
-                        } else {
-                            resolve(null);
-                        }
-                    } catch (e) {
-                        resolve(null);
-                    } finally {
-                        delete window[callbackName];
-                        if (script.parentNode) script.parentNode.removeChild(script);
-                    }
-                };
-                
-                script.onerror = function() {
-                    delete window[callbackName];
-                    if (script.parentNode) script.parentNode.removeChild(script);
-                    resolve(null);
-                };
-                
-                script.src = `https://api.bilibili.com/x/player/pagelist?bvid=${bvid}&jsonp=jsonp&callback=${callbackName}`;
-                document.head.appendChild(script);
-                
-                setTimeout(() => {
-                    if (window[callbackName]) {
-                        delete window[callbackName];
-                        if (script.parentNode) script.parentNode.removeChild(script);
-                        resolve(null);
-                    }
-                }, 8000);
-            });
+                const data = await response.json();
+                if (data && data.data && data.data.length > 0 && data.data[0].pic) {
+                    return data.data[0].pic + '@320w_180h.jpg';
+                }
+                return null;
+            } catch (e) {
+                console.log('获取缩略图失败:', e);
+                return null;
+            }
         }
 
         // 添加缩略图进度日志
