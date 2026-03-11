@@ -182,16 +182,18 @@ body.light-theme .share-btn:hover {
 
 body.light-theme .like-btn {
     color: #64748b;
-    background: #f1f5f9;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
 }
 
 body.light-theme .like-btn:hover {
-    color: #3b82f6;
-    background: #dbeafe;
+    color: #ef4444;
+    background: #fef2f2;
+    border-color: #fca5a5;
 }
 
 body.light-theme .like-btn .like-count {
-    color: #64748b;
+    color: #475569;
 }
 
 body.light-theme .report-btn {
@@ -517,16 +519,18 @@ body.light-theme .share-btn:hover {
 
 body.light-theme .like-btn {
     color: #64748b;
-    background: #f1f5f9;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
 }
 
 body.light-theme .like-btn:hover {
-    color: #3b82f6;
-    background: #dbeafe;
+    color: #ef4444;
+    background: #fef2f2;
+    border-color: #fca5a5;
 }
 
 body.light-theme .like-btn .like-count {
-    color: #64748b;
+    color: #475569;
 }
 
 body.light-theme .report-btn {
@@ -1671,30 +1675,40 @@ body.light-theme .folder-drag-handle:hover {
 }
 
 .like-btn {
-    background: rgba(255,255,255,0.1);
-    border: none;
-    border-radius: 16px;
-    padding: 4px 10px;
-    font-size: 0.85rem;
+    background: rgba(255,255,255,0.12);
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.3s;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
+    min-width: 70px;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .like-btn:hover {
-    background: rgba(233,69,96,0.2);
-    transform: scale(1.05);
+    background: rgba(233,69,96,0.3);
+    border-color: rgba(233,69,96,0.5);
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(233,69,96,0.2);
+}
+
+.like-btn:active {
+    transform: scale(0.98);
 }
 
 .like-btn .like-icon {
-    font-size: 1rem;
+    font-size: 1.3rem;
 }
 
 .like-btn .like-count {
-    color: rgba(255,255,255,0.7);
-    font-weight: 600;
+    color: rgba(255,255,255,0.9);
+    font-weight: 700;
+    font-size: 1rem;
 }
 
 .report-btn {
