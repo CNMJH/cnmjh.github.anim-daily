@@ -898,15 +898,9 @@ function toggleFolderEditMode() {
     const editBtn = document.getElementById('editFoldersBtn');
     
     if (folderEditMode) {
-        editBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        editBtn.style.color = '#fff';
-        editBtn.style.borderColor = 'transparent';
-        editBtn.textContent = '✓ 完成';
+        editBtn.textContent = '完成';
     } else {
-        editBtn.style.background = '#f1f5f9';
-        editBtn.style.color = '#64748b';
-        editBtn.style.borderColor = '#e2e8f0';
-        editBtn.textContent = '✏️ 编辑';
+        editBtn.textContent = '编辑';
     }
     
     renderFolders();
