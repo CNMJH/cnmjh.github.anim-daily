@@ -80,5 +80,23 @@
       "国外动画师"
     ],
     "likes": 0
+  },
+  {
+    "id": "work_1773192520373",
+    "title": "韩国高级动画师 Kilin Kim 《Apex Legend》项目动画作品集",
+    "type": "animation",
+    "subcategory": "character",
+    "url": "https://www.bilibili.com/video/BV1PG3vzHEop/?share_source=copy_web&vd_source=0623765ede2af532f049f4f5d00b56ca",
+    "source": "B站",
+    "artist": "待确认",
+    "date": "2026-03-11",
+    "image": "",
+    "description": "",
+    "tags": [
+      "角色动画",
+      "国外动画师",
+      "游戏动画"
+    ],
+    "likes": 0
   }
 ]
