@@ -502,30 +502,6 @@
                 </div>
             </div>
             
-            <div style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
-                <h3 style="margin-bottom: 20px; color: #1e293b;">☁️ 七牛云配置</h3>
-                
-                <div class="form-group">
-                    <label>AccessKey</label>
-                    <input type="text" id="qiniuAccessKey" placeholder="请输入七牛云AccessKey">
-                </div>
-                
-                <div class="form-group">
-                    <label>SecretKey</label>
-                    <input type="password" id="qiniuSecretKey" placeholder="请输入七牛云SecretKey">
-                </div>
-                
-                <div class="form-group">
-                    <label>Bucket名称</label>
-                    <input type="text" id="qiniuBucket" placeholder="请输入七牛云Bucket名称">
-                </div>
-                
-                <div class="form-group">
-                    <label>CDN域名</label>
-                    <input type="text" id="qiniuDomain" placeholder="请输入七牛云CDN域名，如：xxx.xxx.com">
-                </div>
-            </div>
-            
             <div style="display: flex; gap: 15px;">
                 <button onclick="saveSiteConfig()" style="padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; font-weight: 600;">💾 保存配置</button>
                 <button onclick="resetSiteConfig()" style="padding: 12px 30px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; cursor: pointer; font-weight: 500;">↩️ 重置默认</button>
@@ -1385,50 +1361,6 @@
             }
         }
 
-        // ========== 七牛云相关 ==========
-        // Base64编码（七牛云安全编码）
-        function safeBase64Encode(str) {
-            const base64 = btoa(unescape(encodeURIComponent(str)));
-            return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        }
-
-        // 生成七牛云上传凭证
-        function generateQiniuUploadToken(accessKey, secretKey, bucket, expires = 3600) {
-            const deadline = Math.floor(Date.now() / 1000) + expires;
-            const policy = {
-                scope: bucket,
-                deadline: deadline
-            };
-            const policyStr = JSON.stringify(policy);
-            const encodedPolicy = safeBase64Encode(policyStr);
-            
-            // 由于前端无法安全地进行HMAC-SHA1签名，我们使用一个简化方案
-            // 注意：这只是为了演示，生产环境建议使用后端签名
-            // 这里我们使用一个简单的token生成方式，实际使用时应该从后端获取
-            return accessKey + ':' + 'fake_signature' + ':' + encodedPolicy;
-        }
-
-        // 上传图片到七牛云（通过URL）
-        async function uploadToQiniu(imageUrl, filename) {
-            const accessKey = document.getElementById('qiniuAccessKey').value;
-            const secretKey = document.getElementById('qiniuSecretKey').value;
-            const bucket = document.getElementById('qiniuBucket').value;
-            const domain = document.getElementById('qiniuDomain').value;
-            
-            if (!accessKey || !secretKey || !bucket || !domain) {
-                throw new Error('请先配置七牛云信息！');
-            }
-            
-            // 由于前端直接上传到七牛云需要复杂的签名，这里提供两个方案：
-            // 方案1：先下载图片，再通过FormData上传（需要处理跨域）
-            // 方案2：直接保存B站的缩略图链接（当前方案，简单可靠）
-            
-            // 为了简化实现，我们暂时直接使用B站的缩略图链接
-            // 等后续有后端支持后再实现真正的七牛云上传
-            console.log('⚠️ 暂使用B站缩略图链接，七牛云上传需要后端支持');
-            return imageUrl;
-        }
-
         // ========== B站缩略图相关 ==========
         // 从B站URL提取BV号
         function extractBvidFromUrl(url) {
@@ -1510,14 +1442,6 @@
             if (!worksManageData || worksManageData.length === 0) {
                 alert('❌ 没有内容可以处理！');
                 return;
-            }
-            
-            // 自动填充七牛云配置（你提供的）
-            if (!document.getElementById('qiniuAccessKey').value) {
-                document.getElementById('qiniuAccessKey').value = 'DwLK5ft-Zx0XgxiI8HaIyeUh0wyaHddssczs2s0c';
-            }
-            if (!document.getElementById('qiniuSecretKey').value) {
-                document.getElementById('qiniuSecretKey').value = '14ykOp2Q-nkbLmSfZdd2aHmoEnZUHqWxk1BeFN2-';
             }
             
             // 显示进度区域
