@@ -645,6 +645,30 @@ body.light-theme .tags-toggle-btn:hover {
     color: #3b82f6;
 }
 
+body.light-theme .folder-rename-btn {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #64748b;
+}
+
+body.light-theme .folder-rename-btn:hover {
+    background: #dbeafe;
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+body.light-theme .folder-delete-btn {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #64748b;
+}
+
+body.light-theme .folder-delete-btn:hover {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
 body.light-theme .folders-title {
     color: #1e293b;
 }
@@ -1162,6 +1186,42 @@ body.light-theme .form-group select option {
 
 .tags-toggle-btn:hover {
     background: rgba(255,255,255,0.2);
+    color: #fff;
+}
+
+/* 收藏夹编辑按钮 - 重命名 */
+.folder-rename-btn {
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    color: rgba(255,255,255,0.7);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.folder-rename-btn:hover {
+    background: rgba(59,130,246,0.2);
+    border-color: #3b82f6;
+    color: #fff;
+}
+
+/* 收藏夹编辑按钮 - 删除 */
+.folder-delete-btn {
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    color: rgba(255,255,255,0.7);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.folder-delete-btn:hover {
+    background: rgba(239,68,68,0.2);
+    border-color: #ef4444;
     color: #fff;
 }
 

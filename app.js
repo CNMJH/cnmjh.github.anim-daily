@@ -949,8 +949,8 @@ function renderFolders() {
                     ${escapeHtml(folder.name)} (${count})
                 </button>
                 ${showEditControls ? `
-                    <button style="padding: 6px 10px; background: #dbeafe; color: #3b82f6; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem;" onclick="renameFolder('${folder.id}')">✏️</button>
-                    <button style="padding: 6px 10px; background: #fee2e2; color: #ef4444; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem;" onclick="deleteFolder('${folder.id}')">🗑️</button>
+                    <button class="folder-rename-btn" onclick="renameFolder('${folder.id}')">✏️</button>
+                    <button class="folder-delete-btn" onclick="deleteFolder('${folder.id}')">🗑️</button>
                 ` : ''}
             </div>
         `;
