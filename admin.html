@@ -1448,44 +1448,48 @@
         }
 
         // 获取B站缩略图URL（小图：320x180）
-        async function getBilibiliThumbnailUrl(bvid) {
-            if (!bvid) {
-                console.log('❌ 无BV号，跳过');
-                return null;
-            }
-            
-            console.log('🎬 正在获取缩略图，BV号:', bvid);
-            
-            try {
-                // 使用CORS代理来避免跨域问题
-                const apiUrl = `https://api.bilibili.com/x/player/pagelist?bvid=${bvid}`;
-                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
-                
-                console.log('🌐 API URL (通过代理):', proxyUrl);
-                
-                const response = await fetch(proxyUrl);
-                
-                if (!response.ok) {
-                    console.log('❌ API请求失败，状态码:', response.status);
-                    return null;
+        function getBilibiliThumbnailUrl(bvid) {
+            return new Promise((resolve) => {
+                if (!bvid) {
+                    resolve(null);
+                    return;
                 }
                 
-                const data = await response.json();
-                console.log('📦 收到B站API响应:', data);
+                const callbackName = 'bili_' + Date.now() + Math.random().toString(36).substr(2, 9);
+                const script = document.createElement('script');
                 
-                if (data && data.data && data.data.length > 0 && data.data[0].pic) {
-                    // 返回压缩后的小图（320x180）
-                    const thumbUrl = data.data[0].pic + '@320w_180h.jpg';
-                    console.log('✅ 缩略图URL:', thumbUrl);
-                    return thumbUrl;
-                } else {
-                    console.log('❌ API响应中没有缩略图');
-                    return null;
-                }
-            } catch (e) {
-                console.warn('❌ 获取B站缩略图失败:', e);
-                return null;
-            }
+                window[callbackName] = function(data) {
+                    try {
+                        if (data && data.data && data.data.length > 0 && data.data[0].pic) {
+                            resolve(data.data[0].pic + '@320w_180h.jpg');
+                        } else {
+                            resolve(null);
+                        }
+                    } catch (e) {
+                        resolve(null);
+                    } finally {
+                        delete window[callbackName];
+                        if (script.parentNode) script.parentNode.removeChild(script);
+                    }
+                };
+                
+                script.onerror = function() {
+                    delete window[callbackName];
+                    if (script.parentNode) script.parentNode.removeChild(script);
+                    resolve(null);
+                };
+                
+                script.src = `https://api.bilibili.com/x/player/pagelist?bvid=${bvid}&jsonp=jsonp&callback=${callbackName}`;
+                document.head.appendChild(script);
+                
+                setTimeout(() => {
+                    if (window[callbackName]) {
+                        delete window[callbackName];
+                        if (script.parentNode) script.parentNode.removeChild(script);
+                        resolve(null);
+                    }
+                }, 8000);
+            });
         }
 
         // 添加缩略图进度日志
@@ -1560,51 +1564,34 @@
                 document.getElementById('thumbnailProgressPercent').textContent = `${progress}%`;
                 document.getElementById('thumbnailProgressBar').style.width = `${progress}%`;
                 
-                addThumbnailLog(`🔍 正在处理: ${item.title}`, 'info');
-                addThumbnailLog(`  🔗 URL: ${item.url}`, 'info');
+                addThumbnailLog(`🔍 [${i + 1}/${worksToProcess.length}] ${item.title}`, 'info');
                 
                 const bvid = extractBvidFromUrl(item.url);
                 if (!bvid) {
-                    addThumbnailLog(`❌ 无法提取BV号: ${item.title}`, 'error');
-                    addThumbnailLog(`  💡 提示：请使用完整的B站链接（包含BV号），不要用短链接`, 'info');
+                    addThumbnailLog(`❌ 无法提取BV号`, 'error');
                     failCount++;
                     continue;
                 }
                 
-                addThumbnailLog(`  ✅ 提取到BV号: ${bvid}`, 'success');
+                addThumbnailLog(`  BV号: ${bvid}`, 'info');
                 
                 const thumbUrl = await getBilibiliThumbnailUrl(bvid);
                 
                 if (thumbUrl) {
-                    let finalImageUrl = thumbUrl;
-                    
-                    // 如果配置了七牛云，尝试上传到七牛云
-                    if (bucket && domain) {
-                        try {
-                            addThumbnailLog('  ☁️ 正在上传到七牛云...', 'info');
-                            const filename = `thumbnail-${bvid}-${Date.now()}.jpg`;
-                            finalImageUrl = await uploadToQiniu(thumbUrl, filename);
-                            addThumbnailLog(`  ✅ 七牛云上传成功: ${finalImageUrl}`, 'success');
-                        } catch (e) {
-                            addThumbnailLog(`  ⚠️ 七牛云上传失败，使用B站链接: ${e.message}`, 'info');
-                            finalImageUrl = thumbUrl;
-                        }
-                    }
-                    
                     // 更新worksData
                     const originalIndex = worksManageData.findIndex(w => w.url === item.url);
                     if (originalIndex !== -1) {
-                        worksManageData[originalIndex].image = finalImageUrl;
+                        worksManageData[originalIndex].image = thumbUrl;
                     }
-                    addThumbnailLog(`✅ 获取成功: ${finalImageUrl}`, 'success');
+                    addThumbnailLog(`✅ 成功: ${thumbUrl}`, 'success');
                     successCount++;
                 } else {
-                    addThumbnailLog(`❌ 获取失败: ${item.title}`, 'error');
+                    addThumbnailLog(`❌ 失败`, 'error');
                     failCount++;
                 }
                 
                 // 延迟一下，避免请求太快
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 600));
             }
             
             // 完成后保存到GitHub
