@@ -2,6 +2,6 @@
   "imageHeight": 150,
   "contentHeight": 150,
   "autoContentHeight": true,
-  "columns": 4,
+  "columns": 5,
   "maxRows": 5
 }
