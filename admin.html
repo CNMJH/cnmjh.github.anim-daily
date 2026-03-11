@@ -546,11 +546,39 @@
             
             try {
                 console.log('正在保存样式配置到GitHub...');
+                console.log('GitHub配置:', {
+                    owner: githubConfig.owner,
+                    repo: githubConfig.repo,
+                    branch: githubConfig.branch,
+                    token: githubConfig.token ? '***已设置***' : '未设置'
+                });
                 
-                // 保存到GitHub
-                const sha = await getStyleConfigFileSha();
+                // 获取文件SHA
+                let sha = null;
+                try {
+                    sha = await getStyleConfigFileSha();
+                    console.log('获取到的SHA:', sha);
+                } catch (e) {
+                    console.log('文件不存在，将创建新文件');
+                }
+                
                 const content = btoa(unescape(encodeURIComponent(JSON.stringify(config, null, 2))));
                 const updateUrl = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/style-config.json`;
+                
+                // 构建请求体
+                const requestBody = {
+                    message: '更新卡片样式配置',
+                    content: content,
+                    branch: githubConfig.branch
+                };
+                
+                // 如果有SHA，添加到请求体
+                if (sha) {
+                    requestBody.sha = sha;
+                }
+                
+                console.log('请求URL:', updateUrl);
+                console.log('请求体:', requestBody);
                 
                 const response = await fetch(updateUrl, {
                     method: 'PUT',
@@ -559,28 +587,35 @@
                         'Accept': 'application/vnd.github.v3+json',
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        message: '更新卡片样式配置',
-                        content: content,
-                        sha: sha,
-                        branch: githubConfig.branch
-                    })
+                    body: JSON.stringify(requestBody)
                 });
+                
+                console.log('GitHub响应状态:', response.status, response.statusText);
                 
                 if (response.ok) {
                     alert('✅ 卡片样式配置已保存到GitHub！\n\n所有用户刷新网站即可看到效果！');
                 } else {
-                    throw new Error('保存失败');
+                    let errorMsg = '保存失败';
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.message || errorMsg;
+                        console.error('GitHub错误响应:', errorData);
+                    } catch (e) {
+                        errorMsg = response.statusText || errorMsg;
+                    }
+                    throw new Error(errorMsg);
                 }
             } catch (e) {
                 console.error('保存样式配置失败:', e);
-                alert('❌ 保存到GitHub失败！\n\n请检查GitHub配置！');
+                alert('❌ 保存到GitHub失败！\n\n错误信息：' + e.message + '\n\n请检查控制台日志获取更多信息！');
             }
         }
 
         // 获取style-config.json的SHA
         async function getStyleConfigFileSha() {
             const url = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/style-config.json?ref=${githubConfig.branch}`;
+            console.log('正在获取文件SHA:', url);
+            
             const response = await fetch(url, {
                 headers: {
                     'Authorization': `token ${githubConfig.token}`,
@@ -588,12 +623,10 @@
                 }
             });
             
+            console.log('获取SHA响应状态:', response.status, response.statusText);
+            
             if (!response.ok) {
-                // 如果文件不存在，返回null（会创建新文件）
-                if (response.status === 404) {
-                    return null;
-                }
-                throw new Error('获取文件信息失败');
+                throw new Error('获取文件信息失败: ' + response.status);
             }
             
             const data = await response.json();
@@ -615,10 +648,29 @@
             try {
                 console.log('正在重置样式配置到GitHub...');
                 
-                // 保存默认配置到GitHub
-                const sha = await getStyleConfigFileSha();
+                // 获取文件SHA
+                let sha = null;
+                try {
+                    sha = await getStyleConfigFileSha();
+                    console.log('获取到的SHA:', sha);
+                } catch (e) {
+                    console.log('文件不存在，将创建新文件');
+                }
+                
                 const content = btoa(unescape(encodeURIComponent(JSON.stringify(defaultCardStyle, null, 2))));
                 const updateUrl = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/style-config.json`;
+                
+                // 构建请求体
+                const requestBody = {
+                    message: '重置卡片样式为默认',
+                    content: content,
+                    branch: githubConfig.branch
+                };
+                
+                // 如果有SHA，添加到请求体
+                if (sha) {
+                    requestBody.sha = sha;
+                }
                 
                 const response = await fetch(updateUrl, {
                     method: 'PUT',
@@ -627,13 +679,10 @@
                         'Accept': 'application/vnd.github.v3+json',
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        message: '重置卡片样式为默认',
-                        content: content,
-                        sha: sha,
-                        branch: githubConfig.branch
-                    })
+                    body: JSON.stringify(requestBody)
                 });
+                
+                console.log('GitHub响应状态:', response.status, response.statusText);
                 
                 if (response.ok) {
                     // 重置滑条值
@@ -646,11 +695,19 @@
                     updateSliderValues();
                     alert('✅ 已重置为默认样式并保存到GitHub！\n\n所有用户刷新网站即可看到效果！');
                 } else {
-                    throw new Error('重置失败');
+                    let errorMsg = '重置失败';
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.message || errorMsg;
+                        console.error('GitHub错误响应:', errorData);
+                    } catch (e) {
+                        errorMsg = response.statusText || errorMsg;
+                    }
+                    throw new Error(errorMsg);
                 }
             } catch (e) {
                 console.error('重置样式配置失败:', e);
-                alert('❌ 重置到GitHub失败！\n\n请检查GitHub配置！');
+                alert('❌ 重置到GitHub失败！\n\n错误信息：' + e.message + '\n\n请检查控制台日志获取更多信息！');
             }
         }
 
