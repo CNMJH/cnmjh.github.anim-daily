@@ -1244,6 +1244,9 @@ body.light-theme .form-group select option {
     user-select: none;
     font-weight: bold;
     font-size: 1.1rem;
+    cursor: grab;
+    padding: 0 5px;
+    color: rgba(255,255,255,0.4);
 }
 
 .folder-drag-handle:hover {

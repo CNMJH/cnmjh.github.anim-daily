@@ -628,7 +628,7 @@ function renderFolders() {
                  ondragleave="handleFolderDragLeave(event)"
                  ondrop="handleFolderDrop(event, ${index})"
                  style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; transition: all 0.2s;">
-                ${!isDefault ? `<span class="folder-drag-handle" style="cursor: grab; padding: 0 5px; color: rgba(255,255,255,0.4);">⋮⋮</span>` : `<span style="width: 26px;"></span>`}
+                ${!isDefault ? `<span class="folder-drag-handle">⋮⋮</span>` : `<span style="width: 26px;"></span>`}
                 <button class="folder-btn ${isActive ? 'active' : ''}" 
                         onclick="switchFolder('${folder.id}')" 
                         ondragover="handleDragOver(event)" 
