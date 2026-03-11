@@ -1824,8 +1824,12 @@ function getBilibiliThumbnailUrl(bvid) {
         window[callbackName] = function(data) {
             try {
                 if (data && data.data && data.data.length > 0 && data.data[0].pic) {
-                    // 返回压缩后的小图（320x180）
-                    resolve(data.data[0].pic + '@320w_180h.jpg');
+                    // 直接返回原始图片URL，确保是https
+                    let picUrl = data.data[0].pic;
+                    if (picUrl.startsWith('http://')) {
+                        picUrl = 'https://' + picUrl.slice(7);
+                    }
+                    resolve(picUrl);
                 } else {
                     resolve(null);
                 }
