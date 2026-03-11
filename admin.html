@@ -249,6 +249,27 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(102,126,234,0.4);
         }
+        .nav-tab {
+            padding: 12px 24px;
+            background: #f8fafc;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            border-radius: 8px 8px 0 0;
+        }
+        .nav-tab:hover {
+            background: #f1f5f9;
+            color: #3b82f6;
+        }
+        .nav-tab.active {
+            background: #fff;
+            border-bottom: 2px solid #3b82f6;
+            color: #3b82f6;
+        }
     </style>
 </head>
 <body>
@@ -263,11 +284,11 @@
         </div>
 
         <div class="nav-tabs" style="display: flex; gap: 5px; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; flex-wrap: wrap;">
-            <button class="nav-tab active" style="padding: 12px 24px; background: #fff; border: none; border-bottom: 2px solid #3b82f6; color: #3b82f6; cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; border-radius: 8px 8px 0 0;" onclick="switchAdminTab('submissions')">📋 投稿审核</button>
-            <button class="nav-tab" style="padding: 12px 24px; background: #f8fafc; border: none; border-bottom: 2px solid transparent; color: #64748b; cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; border-radius: 8px 8px 0 0;" onclick="switchAdminTab('works')">🎬 内容管理</button>
-            <button class="nav-tab" style="padding: 12px 24px; background: #f8fafc; border: none; border-bottom: 2px solid transparent; color: #64748b; cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; border-radius: 8px 8px 0 0;" onclick="switchAdminTab('reports')">⚠️ 举报管理</button>
-            <button class="nav-tab" style="padding: 12px 24px; background: #f8fafc; border: none; border-bottom: 2px solid transparent; color: #64748b; cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; border-radius: 8px 8px 0 0;" onclick="switchAdminTab('style')">🎨 卡片样式</button>
-            <button class="nav-tab" style="padding: 12px 24px; background: #f8fafc; border: none; border-bottom: 2px solid transparent; color: #64748b; cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; border-radius: 8px 8px 0 0;" onclick="switchAdminTab('site')">⚙️ 网站管理</button>
+            <button class="nav-tab active" onclick="switchAdminTab('submissions')">📋 投稿审核</button>
+            <button class="nav-tab" onclick="switchAdminTab('works')">🎬 内容管理</button>
+            <button class="nav-tab" onclick="switchAdminTab('reports')">⚠️ 举报管理</button>
+            <button class="nav-tab" onclick="switchAdminTab('style')">🎨 卡片样式</button>
+            <button class="nav-tab" onclick="switchAdminTab('site')">⚙️ 网站管理</button>
         </div>
 
         <div id="submissions-section">
@@ -604,6 +625,9 @@
             maxRows: 3
         };
 
+        // 标记是否已绑定滑条事件
+        let sliderEventsBound = false;
+        
         // 加载卡片样式配置
         async function loadCardStyle() {
             try {
@@ -630,12 +654,15 @@
                 // 更新显示值
                 updateSliderValues();
                 
-                // 绑定滑条事件
-                document.getElementById('imageHeightSlider').addEventListener('input', updateSliderValues);
-                document.getElementById('contentHeightSlider').addEventListener('input', updateSliderValues);
-                document.getElementById('autoContentHeight').addEventListener('change', updateSliderValues);
-                document.getElementById('columnsSlider').addEventListener('input', updateSliderValues);
-                document.getElementById('maxRowsSlider').addEventListener('input', updateSliderValues);
+                // 只绑定一次滑条事件
+                if (!sliderEventsBound) {
+                    document.getElementById('imageHeightSlider').addEventListener('input', updateSliderValues);
+                    document.getElementById('contentHeightSlider').addEventListener('input', updateSliderValues);
+                    document.getElementById('autoContentHeight').addEventListener('change', updateSliderValues);
+                    document.getElementById('columnsSlider').addEventListener('input', updateSliderValues);
+                    document.getElementById('maxRowsSlider').addEventListener('input', updateSliderValues);
+                    sliderEventsBound = true;
+                }
                 
             } catch (e) {
                 console.error('加载卡片样式配置失败:', e);
