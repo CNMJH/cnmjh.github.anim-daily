@@ -14,9 +14,10 @@
       "name": "动画作品",
       "subcategories": {
         "character": "角色动画",
-        "action": "动作场面",
         "facial": "表情动画",
-        "creature": "生物动画"
+        "creature": "生物动画",
+        "monster": "怪物动画",
+        "object": "物件动画"
       }
     },
     "pose": {
