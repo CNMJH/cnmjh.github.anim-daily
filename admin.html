@@ -371,22 +371,30 @@
                 <h3 style="margin-bottom: 20px; color: #1e293b;">📐 卡片尺寸</h3>
                 
                 <div style="margin-bottom: 25px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <label style="font-weight: 500; color: #475569;">图片区域高度</label>
-                        <span id="imageHeightValue" style="color: #3b82f6; font-weight: 600;">240px</span>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <button onclick="changeImageHeight(-10)" style="width: 36px; height: 36px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; font-size: 1.2rem; font-weight: bold;">-</button>
+                            <input type="number" id="imageHeightInput" min="150" max="400" value="240" style="width: 80px; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; text-align: center; font-size: 1rem; font-weight: 600; color: #3b82f6;">
+                            <button onclick="changeImageHeight(10)" style="width: 36px; height: 36px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; font-size: 1.2rem; font-weight: bold;">+</button>
+                            <span style="color: #64748b; font-weight: 500;">px</span>
+                        </div>
                     </div>
-                    <input type="range" id="imageHeightSlider" min="150" max="400" value="240" style="width: 100%;">
                 </div>
                 
                 <div style="margin-bottom: 25px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <label style="font-weight: 500; color: #475569;">内容区域高度</label>
-                        <span id="contentHeightValue" style="color: #3b82f6; font-weight: 600;">自动</span>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <button onclick="changeContentHeight(-10)" id="contentHeightMinusBtn" style="width: 36px; height: 36px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; font-size: 1.2rem; font-weight: bold;">-</button>
+                            <input type="number" id="contentHeightInput" min="150" max="400" value="200" style="width: 80px; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; text-align: center; font-size: 1rem; font-weight: 600; color: #3b82f6;">
+                            <button onclick="changeContentHeight(10)" id="contentHeightPlusBtn" style="width: 36px; height: 36px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; font-size: 1.2rem; font-weight: bold;">+</button>
+                            <span style="color: #64748b; font-weight: 500;">px</span>
+                        </div>
                     </div>
-                    <input type="range" id="contentHeightSlider" min="150" max="400" value="200" style="width: 100%;">
                     <div style="margin-top: 5px;">
                         <label style="display: flex; align-items: center; gap: 8px; color: #64748b; font-size: 0.9rem;">
-                            <input type="checkbox" id="autoContentHeight" checked style="width: 16px; height: 16px;">
+                            <input type="checkbox" id="autoContentHeight" checked style="width: 16px; height: 16px;" onchange="toggleContentHeightInput()">
                             内容区域自动高度
                         </label>
                     </div>
@@ -397,19 +405,27 @@
                 <h3 style="margin-bottom: 20px; color: #1e293b;">📊 布局配置</h3>
                 
                 <div style="margin-bottom: 25px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <label style="font-weight: 500; color: #475569;">PC端卡片列数</label>
-                        <span id="columnsValue" style="color: #3b82f6; font-weight: 600;">3列</span>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <button onclick="changeColumns(-1)" style="width: 36px; height: 36px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; font-size: 1.2rem; font-weight: bold;">-</button>
+                            <input type="number" id="columnsInput" min="2" max="5" value="3" style="width: 80px; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; text-align: center; font-size: 1rem; font-weight: 600; color: #3b82f6;">
+                            <button onclick="changeColumns(1)" style="width: 36px; height: 36px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; font-size: 1.2rem; font-weight: bold;">+</button>
+                            <span style="color: #64748b; font-weight: 500;">列</span>
+                        </div>
                     </div>
-                    <input type="range" id="columnsSlider" min="2" max="5" value="3" style="width: 100%;">
                 </div>
                 
                 <div style="margin-bottom: 25px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <label style="font-weight: 500; color: #475569;">每页最大行数</label>
-                        <span id="maxRowsValue" style="color: #3b82f6; font-weight: 600;">3行</span>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <button onclick="changeMaxRows(-1)" style="width: 36px; height: 36px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; font-size: 1.2rem; font-weight: bold;">-</button>
+                            <input type="number" id="maxRowsInput" min="1" max="10" value="3" style="width: 80px; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; text-align: center; font-size: 1rem; font-weight: 600; color: #3b82f6;">
+                            <button onclick="changeMaxRows(1)" style="width: 36px; height: 36px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; font-size: 1.2rem; font-weight: bold;">+</button>
+                            <span style="color: #64748b; font-weight: 500;">行</span>
+                        </div>
                     </div>
-                    <input type="range" id="maxRowsSlider" min="1" max="10" value="3" style="width: 100%;">
                 </div>
             </div>
             
@@ -684,57 +700,77 @@
                     console.warn('⚠️ 从GitHub加载样式配置失败，使用默认值:', e);
                 }
                 
-                // 设置滑条值
-                document.getElementById('imageHeightSlider').value = config.imageHeight;
-                document.getElementById('contentHeightSlider').value = config.contentHeight;
+                // 设置输入框值
+                document.getElementById('imageHeightInput').value = config.imageHeight;
+                document.getElementById('contentHeightInput').value = config.contentHeight;
                 document.getElementById('autoContentHeight').checked = config.autoContentHeight;
-                document.getElementById('columnsSlider').value = config.columns;
-                document.getElementById('maxRowsSlider').value = config.maxRows;
+                document.getElementById('columnsInput').value = config.columns;
+                document.getElementById('maxRowsInput').value = config.maxRows;
                 
-                // 更新显示值
-                updateSliderValues();
-                
-                // 只绑定一次滑条事件
-                if (!sliderEventsBound) {
-                    document.getElementById('imageHeightSlider').addEventListener('input', updateSliderValues);
-                    document.getElementById('contentHeightSlider').addEventListener('input', updateSliderValues);
-                    document.getElementById('autoContentHeight').addEventListener('change', updateSliderValues);
-                    document.getElementById('columnsSlider').addEventListener('input', updateSliderValues);
-                    document.getElementById('maxRowsSlider').addEventListener('input', updateSliderValues);
-                    sliderEventsBound = true;
-                }
+                // 更新输入框状态
+                toggleContentHeightInput();
                 
             } catch (e) {
                 console.error('加载卡片样式配置失败:', e);
             }
         }
 
-        // 更新滑条显示值
-        function updateSliderValues() {
-            const imageHeight = document.getElementById('imageHeightSlider').value;
-            const contentHeight = document.getElementById('contentHeightSlider').value;
+        // 切换内容高度输入框状态
+        function toggleContentHeightInput() {
             const autoContentHeight = document.getElementById('autoContentHeight').checked;
-            const columns = document.getElementById('columnsSlider').value;
-            const maxRows = document.getElementById('maxRowsSlider').value;
+            const contentHeightInput = document.getElementById('contentHeightInput');
+            const minusBtn = document.getElementById('contentHeightMinusBtn');
+            const plusBtn = document.getElementById('contentHeightPlusBtn');
             
-            document.getElementById('imageHeightValue').textContent = imageHeight + 'px';
-            document.getElementById('contentHeightValue').textContent = autoContentHeight ? '自动' : contentHeight + 'px';
-            document.getElementById('columnsValue').textContent = columns + '列';
-            document.getElementById('maxRowsValue').textContent = maxRows + '行';
-            
-            // 如果启用了自动高度，禁用内容高度滑条
-            document.getElementById('contentHeightSlider').disabled = autoContentHeight;
-            document.getElementById('contentHeightSlider').style.opacity = autoContentHeight ? '0.5' : '1';
+            const disabled = autoContentHeight;
+            contentHeightInput.disabled = disabled;
+            minusBtn.disabled = disabled;
+            plusBtn.disabled = disabled;
+            contentHeightInput.style.opacity = disabled ? '0.5' : '1';
+            minusBtn.style.opacity = disabled ? '0.5' : '1';
+            plusBtn.style.opacity = disabled ? '0.5' : '1';
+        }
+
+        // 修改图片高度
+        function changeImageHeight(delta) {
+            const input = document.getElementById('imageHeightInput');
+            let value = parseInt(input.value) + delta;
+            value = Math.max(150, Math.min(400, value));
+            input.value = value;
+        }
+
+        // 修改内容高度
+        function changeContentHeight(delta) {
+            const input = document.getElementById('contentHeightInput');
+            let value = parseInt(input.value) + delta;
+            value = Math.max(150, Math.min(400, value));
+            input.value = value;
+        }
+
+        // 修改列数
+        function changeColumns(delta) {
+            const input = document.getElementById('columnsInput');
+            let value = parseInt(input.value) + delta;
+            value = Math.max(2, Math.min(5, value));
+            input.value = value;
+        }
+
+        // 修改行数
+        function changeMaxRows(delta) {
+            const input = document.getElementById('maxRowsInput');
+            let value = parseInt(input.value) + delta;
+            value = Math.max(1, Math.min(10, value));
+            input.value = value;
         }
 
         // 保存卡片样式配置到GitHub
         async function saveCardStyle() {
             const config = {
-                imageHeight: parseInt(document.getElementById('imageHeightSlider').value),
-                contentHeight: parseInt(document.getElementById('contentHeightSlider').value),
+                imageHeight: parseInt(document.getElementById('imageHeightInput').value),
+                contentHeight: parseInt(document.getElementById('contentHeightInput').value),
                 autoContentHeight: document.getElementById('autoContentHeight').checked,
-                columns: parseInt(document.getElementById('columnsSlider').value),
-                maxRows: parseInt(document.getElementById('maxRowsSlider').value)
+                columns: parseInt(document.getElementById('columnsInput').value),
+                maxRows: parseInt(document.getElementById('maxRowsInput').value)
             };
             
             // 检查GitHub配置
@@ -884,14 +920,14 @@
                 console.log('GitHub响应状态:', response.status, response.statusText);
                 
                 if (response.ok) {
-                    // 重置滑条值
-                    document.getElementById('imageHeightSlider').value = defaultCardStyle.imageHeight;
-                    document.getElementById('contentHeightSlider').value = defaultCardStyle.contentHeight;
+                    // 重置输入框值
+                    document.getElementById('imageHeightInput').value = defaultCardStyle.imageHeight;
+                    document.getElementById('contentHeightInput').value = defaultCardStyle.contentHeight;
                     document.getElementById('autoContentHeight').checked = defaultCardStyle.autoContentHeight;
-                    document.getElementById('columnsSlider').value = defaultCardStyle.columns;
-                    document.getElementById('maxRowsSlider').value = defaultCardStyle.maxRows;
+                    document.getElementById('columnsInput').value = defaultCardStyle.columns;
+                    document.getElementById('maxRowsInput').value = defaultCardStyle.maxRows;
                     
-                    updateSliderValues();
+                    toggleContentHeightInput();
                     alert('✅ 已重置为默认样式并保存到GitHub！\n\n所有用户刷新网站即可看到效果！');
                 } else {
                     let errorMsg = '重置失败';
