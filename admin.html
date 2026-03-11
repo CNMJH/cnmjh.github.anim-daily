@@ -1476,7 +1476,12 @@
                             const data = await response.json();
                             if (data && data.data && data.data.pic) {
                                 console.log(`代理 ${i + 1} 成功！`);
-                                return data.data.pic + '@320w_180h.jpg';
+                                let imageUrl = data.data.pic + '@320w_180h.jpg';
+                                // 把http://改成https://，避免混合内容问题
+                                if (imageUrl.startsWith('http://')) {
+                                    imageUrl = 'https://' + imageUrl.slice(7);
+                                }
+                                return imageUrl;
                             }
                         }
                     } catch (e) {
