@@ -1696,8 +1696,8 @@ function renderWorks(works) {
              draggable="true" 
              ondragstart="handleDragStart(event, '${workId.replace(/'/g, "\\'")}')"
              style="cursor:pointer">
-            <div class="work-card-image" style="pointer-events: none; ${!item.image || item.image.trim() === '' || item.type !== 'animation' ? 'background: #1a1a2e;' : ''}">
-                ${item.type === 'animation' && item.image && item.image.trim() !== '' ? `<img src="${escapeHtml('https://images.weserv.nl/?url=' + encodeURIComponent(item.image.startsWith('http://') ? 'https://' + item.image.slice(7) : item.image))}" alt="${escapeHtml(item.title)}" draggable="false">` : ''}
+            <div class="work-card-image" style="pointer-events: none; ${!item.image || item.image.trim() === '' ? 'background: #1a1a2e;' : ''}">
+                ${item.image && item.image.trim() !== '' ? `<img src="${escapeHtml('https://images.weserv.nl/?url=' + encodeURIComponent(item.image.startsWith('http://') ? 'https://' + item.image.slice(7) : item.image))}" alt="${escapeHtml(item.title)}" draggable="false">` : ''}
                 <span class="work-type-tag ${item.type}">${typeText}</span>
                 <button class="favorite-btn ${favClass}" onclick="toggleFavorite('${workId.replace(/'/g, "\\'")}', event)" title="收藏" style="pointer-events: auto;">${favIcon}</button>
             </div>
