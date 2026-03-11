@@ -1454,21 +1454,37 @@
             try {
                 // 使用你提供的更好的API
                 const apiUrl = `https://api.bilibili.com/x/web-interface/view?bvid=${bvid}`;
-                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
                 
-                const response = await fetch(proxyUrl);
+                // 尝试多个CORS代理，提高成功率
+                const proxies = [
+                    `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`,
+                    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(apiUrl)}`,
+                    `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`
+                ];
                 
-                if (!response.ok) {
-                    console.log('代理请求失败，尝试另一个方法...');
-                    return null;
+                for (let i = 0; i < proxies.length; i++) {
+                    try {
+                        console.log(`尝试代理 ${i + 1}/${proxies.length}:`, proxies[i]);
+                        const response = await fetch(proxies[i], {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data && data.data && data.data.pic) {
+                                console.log(`代理 ${i + 1} 成功！`);
+                                return data.data.pic + '@320w_180h.jpg';
+                            }
+                        }
+                    } catch (e) {
+                        console.log(`代理 ${i + 1} 失败:`, e);
+                    }
                 }
                 
-                const data = await response.json();
-                
-                if (data && data.data && data.data.pic) {
-                    return data.data.pic + '@320w_180h.jpg';
-                }
-                
+                console.log('所有代理都失败了');
                 return null;
             } catch (e) {
                 console.log('获取缩略图失败:', e);
