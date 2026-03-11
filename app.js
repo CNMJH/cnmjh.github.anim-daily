@@ -3,6 +3,93 @@
 // 新闻数据（从 JSON 文件加载）
 let worksData = [];
 
+// ========== 网站配置 ==========
+const defaultSiteConfig = {
+    siteTitle: "动画每日一刷",
+    siteSubtitle: "3D 动画师每日灵感与 Pose 参考",
+    footerText: "© 2024 动画每日一刷 | 为 3D 动画师打造",
+    menuNames: {
+        all: "全部",
+        animation: "动画作品",
+        pose: "Pose 参考",
+        favorites: "❤️ 我的收藏",
+        history: "📜 浏览历史"
+    }
+};
+
+let siteConfig = { ...defaultSiteConfig };
+
+// 加载网站配置（从GitHub）
+async function loadSiteConfig() {
+    try {
+        // 先尝试从GitHub加载
+        try {
+            const response = await fetch('site-config.json?t=' + Date.now());
+            if (response.ok) {
+                const githubConfig = await response.json();
+                siteConfig = { ...defaultSiteConfig, ...githubConfig };
+                console.log('✅ 从GitHub加载网站配置成功');
+                applySiteConfig();
+            }
+        } catch (e) {
+            console.warn('⚠️ 从GitHub加载网站配置失败，使用默认值:', e);
+        }
+    } catch (e) {
+        console.error('加载网站配置失败:', e);
+    }
+}
+
+// 应用网站配置
+function applySiteConfig() {
+    // 更新网站标题
+    document.title = siteConfig.siteTitle + ' - 3D 动画师参考网站';
+    
+    // 更新页头
+    const headerTitle = document.querySelector('header h1');
+    if (headerTitle) {
+        headerTitle.textContent = '🎬 ' + siteConfig.siteTitle;
+    }
+    
+    const headerSubtitle = document.querySelector('header .subtitle');
+    if (headerSubtitle) {
+        headerSubtitle.textContent = siteConfig.siteSubtitle;
+    }
+    
+    // 更新页脚
+    const footerText = document.getElementById('footerText');
+    if (footerText) {
+        footerText.textContent = siteConfig.footerText;
+    }
+    
+    // 更新菜单名称
+    updateMenuNames();
+}
+
+// 更新菜单名称
+function updateMenuNames() {
+    // 更新主分类按钮
+    const categoryBtns = document.querySelectorAll('.category-btn');
+    categoryBtns.forEach(btn => {
+        const category = btn.dataset.category || 
+                        (btn.id === 'favoriteBtn' ? 'favorites' : 
+                         btn.id === 'historyBtn' ? 'history' : null);
+        
+        if (category && siteConfig.menuNames[category]) {
+            if (btn.dataset.category === 'all') {
+                btn.textContent = siteConfig.menuNames.all;
+            } else if (btn.dataset.category === 'animation') {
+                btn.textContent = siteConfig.menuNames.animation;
+            } else if (btn.dataset.category === 'pose') {
+                btn.textContent = siteConfig.menuNames.pose;
+            } else if (btn.id === 'favoriteBtn') {
+                btn.textContent = siteConfig.menuNames.favorites;
+            } else if (btn.id === 'historyBtn') {
+                btn.textContent = siteConfig.menuNames.history;
+            }
+        }
+    });
+}
+
 // ========== 卡片样式配置 ==========
 const defaultCardStyle = {
     imageHeight: 240,
@@ -1452,6 +1539,7 @@ document.getElementById('searchInput').addEventListener('keypress', function(e) 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', async function() {
     loadTheme();
+    await loadSiteConfig(); // 加载网站配置（从GitHub）
     await loadCardStyleConfig(); // 加载卡片样式配置（从GitHub）
     applyCardStyleConfig(); // 应用卡片样式配置
     loadFavorites();

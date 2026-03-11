@@ -220,6 +220,7 @@
             <button class="nav-tab" style="padding: 12px 24px; background: #f8fafc; border: none; border-bottom: 2px solid transparent; color: #64748b; cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; border-radius: 8px 8px 0 0;" onclick="switchAdminTab('works')">🎬 内容管理</button>
             <button class="nav-tab" style="padding: 12px 24px; background: #f8fafc; border: none; border-bottom: 2px solid transparent; color: #64748b; cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; border-radius: 8px 8px 0 0;" onclick="switchAdminTab('reports')">⚠️ 举报管理</button>
             <button class="nav-tab" style="padding: 12px 24px; background: #f8fafc; border: none; border-bottom: 2px solid transparent; color: #64748b; cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; border-radius: 8px 8px 0 0;" onclick="switchAdminTab('style')">🎨 卡片样式</button>
+            <button class="nav-tab" style="padding: 12px 24px; background: #f8fafc; border: none; border-bottom: 2px solid transparent; color: #64748b; cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; border-radius: 8px 8px 0 0;" onclick="switchAdminTab('site')">⚙️ 网站管理</button>
         </div>
 
         <div id="submissions-section">
@@ -337,6 +338,67 @@
                 <p style="color: #166534; margin: 0;">💡 <strong>提示：</strong>配置保存后，刷新网站即可看到效果！</p>
             </div>
         </div>
+
+        <div id="site-section" style="display:none;">
+            <h2 class="section-title">⚙️ 网站管理</h2>
+            
+            <div style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+                <h3 style="margin-bottom: 20px; color: #1e293b;">🎨 基本信息</h3>
+                
+                <div class="form-group">
+                    <label>网站标题</label>
+                    <input type="text" id="siteTitle" placeholder="动画每日一刷">
+                </div>
+                
+                <div class="form-group">
+                    <label>网站副标题</label>
+                    <input type="text" id="siteSubtitle" placeholder="3D 动画师每日灵感与 Pose 参考">
+                </div>
+                
+                <div class="form-group">
+                    <label>页脚文字</label>
+                    <input type="text" id="footerText" placeholder="© 2024 动画每日一刷 | 为 3D 动画师打造">
+                </div>
+            </div>
+            
+            <div style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+                <h3 style="margin-bottom: 20px; color: #1e293b;">📋 菜单名称</h3>
+                
+                <div class="form-group">
+                    <label>全部</label>
+                    <input type="text" id="menuAll" placeholder="全部">
+                </div>
+                
+                <div class="form-group">
+                    <label>动画作品</label>
+                    <input type="text" id="menuAnimation" placeholder="动画作品">
+                </div>
+                
+                <div class="form-group">
+                    <label>Pose 参考</label>
+                    <input type="text" id="menuPose" placeholder="Pose 参考">
+                </div>
+                
+                <div class="form-group">
+                    <label>我的收藏</label>
+                    <input type="text" id="menuFavorites" placeholder="❤️ 我的收藏">
+                </div>
+                
+                <div class="form-group">
+                    <label>浏览历史</label>
+                    <input type="text" id="menuHistory" placeholder="📜 浏览历史">
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 15px;">
+                <button onclick="saveSiteConfig()" style="padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; font-weight: 600;">💾 保存配置</button>
+                <button onclick="resetSiteConfig()" style="padding: 12px 30px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; cursor: pointer; font-weight: 500;">↩️ 重置默认</button>
+            </div>
+            
+            <div style="margin-top: 30px; padding: 20px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px;">
+                <p style="color: #166534; margin: 0;">💡 <strong>提示：</strong>配置保存后，刷新网站即可看到效果！</p>
+            </div>
+        </div>
     </div>
 
     <!-- 内容管理弹窗 -->
@@ -441,24 +503,35 @@
                 document.getElementById('works-section').style.display = 'none';
                 document.getElementById('reports-section').style.display = 'none';
                 document.getElementById('style-section').style.display = 'none';
+                document.getElementById('site-section').style.display = 'none';
             } else if (tab === 'works') {
                 document.getElementById('submissions-section').style.display = 'none';
                 document.getElementById('works-section').style.display = 'block';
                 document.getElementById('reports-section').style.display = 'none';
                 document.getElementById('style-section').style.display = 'none';
+                document.getElementById('site-section').style.display = 'none';
                 loadWorksForManage();
             } else if (tab === 'reports') {
                 document.getElementById('submissions-section').style.display = 'none';
                 document.getElementById('works-section').style.display = 'none';
                 document.getElementById('reports-section').style.display = 'block';
                 document.getElementById('style-section').style.display = 'none';
+                document.getElementById('site-section').style.display = 'none';
                 loadReports();
             } else if (tab === 'style') {
                 document.getElementById('submissions-section').style.display = 'none';
                 document.getElementById('works-section').style.display = 'none';
                 document.getElementById('reports-section').style.display = 'none';
                 document.getElementById('style-section').style.display = 'block';
+                document.getElementById('site-section').style.display = 'none';
                 loadCardStyle();
+            } else if (tab === 'site') {
+                document.getElementById('submissions-section').style.display = 'none';
+                document.getElementById('works-section').style.display = 'none';
+                document.getElementById('reports-section').style.display = 'none';
+                document.getElementById('style-section').style.display = 'none';
+                document.getElementById('site-section').style.display = 'block';
+                loadSiteConfig();
             }
         }
 
@@ -707,6 +780,241 @@
                 }
             } catch (e) {
                 console.error('重置样式配置失败:', e);
+                alert('❌ 重置到GitHub失败！\n\n错误信息：' + e.message + '\n\n请检查控制台日志获取更多信息！');
+            }
+        }
+
+        // ========== 网站管理 ==========
+        // 默认网站配置
+        const defaultSiteConfig = {
+            siteTitle: "动画每日一刷",
+            siteSubtitle: "3D 动画师每日灵感与 Pose 参考",
+            footerText: "© 2024 动画每日一刷 | 为 3D 动画师打造",
+            menuNames: {
+                all: "全部",
+                animation: "动画作品",
+                pose: "Pose 参考",
+                favorites: "❤️ 我的收藏",
+                history: "📜 浏览历史"
+            }
+        };
+
+        // 加载网站配置
+        async function loadSiteConfig() {
+            try {
+                let config = defaultSiteConfig;
+                
+                // 先尝试从GitHub加载
+                try {
+                    const response = await fetch('site-config.json?t=' + Date.now());
+                    if (response.ok) {
+                        config = await response.json();
+                        console.log('✅ 从GitHub加载网站配置成功');
+                    }
+                } catch (e) {
+                    console.warn('⚠️ 从GitHub加载网站配置失败，使用默认值:', e);
+                }
+                
+                // 填充表单
+                document.getElementById('siteTitle').value = config.siteTitle || '';
+                document.getElementById('siteSubtitle').value = config.siteSubtitle || '';
+                document.getElementById('footerText').value = config.footerText || '';
+                document.getElementById('menuAll').value = config.menuNames?.all || '';
+                document.getElementById('menuAnimation').value = config.menuNames?.animation || '';
+                document.getElementById('menuPose').value = config.menuNames?.pose || '';
+                document.getElementById('menuFavorites').value = config.menuNames?.favorites || '';
+                document.getElementById('menuHistory').value = config.menuNames?.history || '';
+                
+            } catch (e) {
+                console.error('加载网站配置失败:', e);
+            }
+        }
+
+        // 获取site-config.json的SHA
+        async function getSiteConfigFileSha() {
+            const url = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/site-config.json?ref=${githubConfig.branch}`;
+            console.log('正在获取网站配置文件SHA:', url);
+            
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `token ${githubConfig.token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            console.log('获取网站配置SHA响应状态:', response.status, response.statusText);
+            
+            if (!response.ok) {
+                throw new Error('获取文件信息失败: ' + response.status);
+            }
+            
+            const data = await response.json();
+            return data.sha;
+        }
+
+        // 保存网站配置到GitHub
+        async function saveSiteConfig() {
+            const config = {
+                siteTitle: document.getElementById('siteTitle').value,
+                siteSubtitle: document.getElementById('siteSubtitle').value,
+                footerText: document.getElementById('footerText').value,
+                menuNames: {
+                    all: document.getElementById('menuAll').value,
+                    animation: document.getElementById('menuAnimation').value,
+                    pose: document.getElementById('menuPose').value,
+                    favorites: document.getElementById('menuFavorites').value,
+                    history: document.getElementById('menuHistory').value
+                }
+            };
+            
+            // 检查GitHub配置
+            if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo) {
+                alert('❌ 请先配置GitHub！点击右上角"⚙️ 配置GitHub"');
+                return;
+            }
+            
+            try {
+                console.log('正在保存网站配置到GitHub...');
+                console.log('GitHub配置:', {
+                    owner: githubConfig.owner,
+                    repo: githubConfig.repo,
+                    branch: githubConfig.branch,
+                    token: githubConfig.token ? '***已设置***' : '未设置'
+                });
+                
+                // 获取文件SHA
+                let sha = null;
+                try {
+                    sha = await getSiteConfigFileSha();
+                    console.log('获取到的SHA:', sha);
+                } catch (e) {
+                    console.log('文件不存在，将创建新文件');
+                }
+                
+                const content = btoa(unescape(encodeURIComponent(JSON.stringify(config, null, 2))));
+                const updateUrl = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/site-config.json`;
+                
+                // 构建请求体
+                const requestBody = {
+                    message: '更新网站配置',
+                    content: content,
+                    branch: githubConfig.branch
+                };
+                
+                // 如果有SHA，添加到请求体
+                if (sha) {
+                    requestBody.sha = sha;
+                }
+                
+                console.log('请求URL:', updateUrl);
+                
+                const response = await fetch(updateUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${githubConfig.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                console.log('GitHub响应状态:', response.status, response.statusText);
+                
+                if (response.ok) {
+                    alert('✅ 网站配置已保存到GitHub！\n\n所有用户刷新网站即可看到效果！');
+                } else {
+                    let errorMsg = '保存失败';
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.message || errorMsg;
+                        console.error('GitHub错误响应:', errorData);
+                    } catch (e) {
+                        errorMsg = response.statusText || errorMsg;
+                    }
+                    throw new Error(errorMsg);
+                }
+            } catch (e) {
+                console.error('保存网站配置失败:', e);
+                alert('❌ 保存到GitHub失败！\n\n错误信息：' + e.message + '\n\n请检查控制台日志获取更多信息！');
+            }
+        }
+
+        // 重置网站配置
+        async function resetSiteConfig() {
+            if (!confirm('确定要重置为默认网站配置吗？')) {
+                return;
+            }
+            
+            // 检查GitHub配置
+            if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo) {
+                alert('❌ 请先配置GitHub！点击右上角"⚙️ 配置GitHub"');
+                return;
+            }
+            
+            try {
+                console.log('正在重置网站配置到GitHub...');
+                
+                // 获取文件SHA
+                let sha = null;
+                try {
+                    sha = await getSiteConfigFileSha();
+                    console.log('获取到的SHA:', sha);
+                } catch (e) {
+                    console.log('文件不存在，将创建新文件');
+                }
+                
+                const content = btoa(unescape(encodeURIComponent(JSON.stringify(defaultSiteConfig, null, 2))));
+                const updateUrl = `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/site-config.json`;
+                
+                // 构建请求体
+                const requestBody = {
+                    message: '重置网站配置为默认',
+                    content: content,
+                    branch: githubConfig.branch
+                };
+                
+                // 如果有SHA，添加到请求体
+                if (sha) {
+                    requestBody.sha = sha;
+                }
+                
+                const response = await fetch(updateUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${githubConfig.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                console.log('GitHub响应状态:', response.status, response.statusText);
+                
+                if (response.ok) {
+                    // 重置表单
+                    document.getElementById('siteTitle').value = defaultSiteConfig.siteTitle;
+                    document.getElementById('siteSubtitle').value = defaultSiteConfig.siteSubtitle;
+                    document.getElementById('footerText').value = defaultSiteConfig.footerText;
+                    document.getElementById('menuAll').value = defaultSiteConfig.menuNames.all;
+                    document.getElementById('menuAnimation').value = defaultSiteConfig.menuNames.animation;
+                    document.getElementById('menuPose').value = defaultSiteConfig.menuNames.pose;
+                    document.getElementById('menuFavorites').value = defaultSiteConfig.menuNames.favorites;
+                    document.getElementById('menuHistory').value = defaultSiteConfig.menuNames.history;
+                    
+                    alert('✅ 已重置为默认网站配置并保存到GitHub！\n\n所有用户刷新网站即可看到效果！');
+                } else {
+                    let errorMsg = '重置失败';
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.message || errorMsg;
+                        console.error('GitHub错误响应:', errorData);
+                    } catch (e) {
+                        errorMsg = response.statusText || errorMsg;
+                    }
+                    throw new Error(errorMsg);
+                }
+            } catch (e) {
+                console.error('重置网站配置失败:', e);
                 alert('❌ 重置到GitHub失败！\n\n错误信息：' + e.message + '\n\n请检查控制台日志获取更多信息！');
             }
         }
