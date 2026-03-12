@@ -405,10 +405,7 @@ body.light-theme .favorite-btn.active {
     box-shadow: 0 5px 18px rgba(102,126,234,0.45);
 }
 
-body.light-theme .favorite-count {
-    color: #fff !important;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.4);
-}
+
 
 body.light-theme .modal-content {
     background: #ffffff;
@@ -1934,4 +1931,14 @@ body.light-theme .empty-state-text {
     .work-card-image {
         height: 180px;
     }
+}
+
+/* 收藏数 - 最高优先级，确保始终是白色 */
+body div.work-card-image button.favorite-btn span.favorite-count,
+body .favorite-count,
+body.light-theme .favorite-count {
+    color: #ffffff !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.6) !important;
+    font-weight: 900 !important;
+    font-size: 0.9rem !important;
 }
