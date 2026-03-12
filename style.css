@@ -803,7 +803,7 @@ body.light-theme .filter-actions button:last-child:hover {
 .favorite-icon {
     font-size: 1.5rem;
     line-height: 1;
-    transition: transform 0.2s;
+    transition: transform 0.08s;
 }
 
 /* 收藏数 - 显示在按钮正上方 */
