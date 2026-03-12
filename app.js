@@ -1699,7 +1699,9 @@ function renderWorks(works) {
             <div class="work-card-image" style="pointer-events: none; ${!item.image || item.image.trim() === '' ? 'background: #1a1a2e;' : ''}">
                 ${item.image && item.image.trim() !== '' ? `<img src="${escapeHtml('https://images.weserv.nl/?url=' + encodeURIComponent(item.image.startsWith('http://') ? 'https://' + item.image.slice(7) : item.image))}" alt="${escapeHtml(item.title)}" draggable="false">` : ''}
                 <span class="work-type-tag ${item.type}">${typeText}</span>
-                <button class="favorite-btn ${favClass}" onclick="toggleFavorite('${workId.replace(/'/g, "\\'")}', event)" title="收藏" style="pointer-events: auto;">${favIcon}</button>
+                <button class="favorite-btn ${favClass}" onclick="toggleFavorite('${workId.replace(/'/g, "\\'")}', event)" title="收藏" style="pointer-events: auto;">
+                    <span class="favorite-icon">${favIcon}</span>
+                </button>
             </div>
             <div class="work-content">
                 <div class="work-tags">
@@ -1714,10 +1716,6 @@ function renderWorks(works) {
                 ` : ''}
                 <div class="work-meta">
                     <div class="work-actions">
-                        <button class="like-btn" onclick="toggleLike('${workId.replace(/'/g, "\\'")}', event)" title="点赞" style="pointer-events: auto;">
-                            <span class="like-icon">${isLikedValue ? '❤️' : '🤍'}</span>
-                            <span class="like-count">${likeCount}</span>
-                        </button>
                         <button class="share-btn" onclick="shareContent('${workId.replace(/'/g, "\\'")}', '${escapeHtml(item.title)}', '${safeUrl}', event)" title="分享" style="pointer-events: auto;">📤</button>
                         <button class="report-btn" onclick="markLinkInvalid('${workId.replace(/'/g, "\\'")}', event)" title="举报失效链接" style="pointer-events: auto;">⚠️</button>
                         <span class="work-date">${escapeHtml(item.date)}</span>
