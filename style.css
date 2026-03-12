@@ -774,7 +774,7 @@ body.light-theme .filter-actions button:last-child:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: none;
+    transition: transform 0.08s;
     backdrop-filter: blur(6px);
     box-shadow: 0 4px 14px rgba(0,0,0,0.35);
 }
@@ -783,14 +783,11 @@ body.light-theme .filter-actions button:last-child:hover {
     background: rgba(233,69,96,0.5);
     border-color: rgba(233,69,96,0.8);
     box-shadow: 0 6px 20px rgba(233,69,96,0.4);
+    transform: scale(1.08);
 }
 
-.favorite-btn:hover .favorite-icon {
-    transform: scale(1.1);
-}
-
-.favorite-btn:active .favorite-icon {
-    transform: scale(0.85);
+.favorite-btn:active {
+    transform: scale(0.92);
 }
 
 .favorite-btn.active {
