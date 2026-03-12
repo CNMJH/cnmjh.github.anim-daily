@@ -3,6 +3,9 @@
 // 新闻数据（从 JSON 文件加载）
 let worksData = [];
 
+// 全站作品统计数据（从Supabase加载）
+let workStatsMap = {}; // { workId: { like_count: 0, favorite_count: 0 } }
+
 // ========== B站缩略图相关 ==========
 // 从B站URL提取BV号
 function extractBvidFromUrl(url) {
@@ -462,21 +465,34 @@ function saveLikeCounts() {
 }
 
 // 切换点赞状态
-function toggleLike(workId, event) {
+async function toggleLike(workId, event) {
     event.stopPropagation(); // 阻止冒泡
     
-    if (likes.has(workId)) {
-        likes.delete(workId);
-        if (likeCounts[workId] > 0) {
-            likeCounts[workId]--;
-        }
-    } else {
+    const isLiking = !likes.has(workId);
+    
+    // 更新本地状态
+    if (isLiking) {
         likes.add(workId);
-        likeCounts[workId] = (likeCounts[workId] || 0) + 1;
+    } else {
+        likes.delete(workId);
     }
     
     saveLikes();
-    saveLikeCounts();
+    
+    // 更新Supabase统计
+    try {
+        if (typeof updateWorkLikeCount !== 'undefined') {
+            const newCount = await updateWorkLikeCount(workId, isLiking);
+            // 更新本地统计数据
+            if (!workStatsMap[workId]) {
+                workStatsMap[workId] = { like_count: 0, favorite_count: 0 };
+            }
+            workStatsMap[workId].like_count = newCount;
+        }
+    } catch (e) {
+        console.warn('⚠️ 更新点赞统计失败:', e);
+    }
+    
     updateStats();
     renderWorks(filterWorksData());
 }
@@ -853,25 +869,41 @@ function getCurrentFavorites() {
 }
 
 // 切换收藏状态（添加到当前收藏夹）
-function toggleFavorite(workId, event) {
+async function toggleFavorite(workId, event) {
     event.stopPropagation(); // 阻止冒泡，不打开链接
     
     const currentFavorites = getCurrentFavorites();
+    const isFavoriting = !currentFavorites.has(workId);
     
-    if (currentFavorites.has(workId)) {
-        // 从所有收藏夹中移除
-        favorites.folders.forEach(folder => {
-            folder.works = folder.works.filter(id => id !== workId);
-        });
-    } else {
+    if (isFavoriting) {
         // 添加到当前收藏夹
         const folder = favorites.folders.find(f => f.id === favorites.currentFolder);
         if (folder && !folder.works.includes(workId)) {
             folder.works.push(workId);
         }
+    } else {
+        // 从所有收藏夹中移除
+        favorites.folders.forEach(folder => {
+            folder.works = folder.works.filter(id => id !== workId);
+        });
     }
     
     saveFavorites();
+    
+    // 更新Supabase统计
+    try {
+        if (typeof updateWorkFavoriteCount !== 'undefined') {
+            const newCount = await updateWorkFavoriteCount(workId, isFavoriting);
+            // 更新本地统计数据
+            if (!workStatsMap[workId]) {
+                workStatsMap[workId] = { like_count: 0, favorite_count: 0 };
+            }
+            workStatsMap[workId].favorite_count = newCount;
+        }
+    } catch (e) {
+        console.warn('⚠️ 更新收藏统计失败:', e);
+    }
+    
     updateStats();
     renderWorks(filterWorksData());
 }
@@ -1679,17 +1711,11 @@ function renderWorks(works) {
         const favClass = isFav ? 'favorited' : '';
         const isLikedValue = isLiked(workId);
         const likeIcon = isLikedValue ? '❤️' : '🤍';
-        // 只记录本网站用户的点赞数！不使用外部平台的点赞数
-        let siteLikeCount = 0;
-        // 从localStorage读取本网站的点赞统计（简化实现）
-        try {
-            const savedCounts = localStorage.getItem('animDailyLikeCounts');
-            if (savedCounts) {
-                const counts = JSON.parse(savedCounts);
-                siteLikeCount = counts[workId] || 0;
-            }
-        } catch (e) {}
-        const likeCount = siteLikeCount;
+        
+        // 从Supabase统计数据中获取点赞数和收藏数
+        const stats = workStatsMap[workId] || { like_count: 0, favorite_count: 0 };
+        const likeCount = stats.like_count || 0;
+        const favoriteCount = stats.favorite_count || 0;
         
         html += `
         <div class="work-card" onclick="handleCardClick('${workId.replace(/'/g, "\\'")}', '${safeUrl}')" 
@@ -1701,7 +1727,7 @@ function renderWorks(works) {
                 <span class="work-type-tag ${item.type}">${typeText}</span>
                 <button class="favorite-btn ${favClass}" onclick="toggleFavorite('${workId.replace(/'/g, "\\'")}', event)" title="收藏" style="pointer-events: auto;">
                     <span class="favorite-icon">${favIcon}</span>
-                    <span class="favorite-count">${favorites.has(workId) ? '1' : '0'}</span>
+                    <span class="favorite-count">${favoriteCount}</span>
                 </button>
             </div>
             <div class="work-content">
@@ -1949,6 +1975,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     loadLikes();
     loadPendingSubmissions();
     scheduleLinkCheck(); // 定时检查链接
+    
+    // 加载全站统计数据
+    try {
+        console.log('📊 正在加载全站统计数据...');
+        if (typeof getAllWorkStats !== 'undefined') {
+            workStatsMap = await getAllWorkStats();
+            console.log('✅ 统计数据加载完成:', workStatsMap);
+        }
+    } catch (e) {
+        console.warn('⚠️ 加载统计数据失败:', e);
+    }
+    
     loadWorks();
     
     // 初始化投稿表单的分类联动
