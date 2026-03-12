@@ -774,7 +774,7 @@ body.light-theme .filter-actions button:last-child:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s;
+    transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
     backdrop-filter: blur(6px);
     box-shadow: 0 4px 14px rgba(0,0,0,0.35);
 }
@@ -782,12 +782,15 @@ body.light-theme .filter-actions button:last-child:hover {
 .favorite-btn:hover {
     background: rgba(233,69,96,0.5);
     border-color: rgba(233,69,96,0.8);
-    transform: scale(1.1);
     box-shadow: 0 6px 20px rgba(233,69,96,0.4);
 }
 
-.favorite-btn:active {
-    transform: scale(0.95);
+.favorite-btn:hover .favorite-icon {
+    transform: scale(1.15);
+}
+
+.favorite-btn:active .favorite-icon {
+    transform: scale(0.9);
 }
 
 .favorite-btn.active {
@@ -800,6 +803,7 @@ body.light-theme .filter-actions button:last-child:hover {
 .favorite-icon {
     font-size: 1.5rem;
     line-height: 1;
+    transition: transform 0.2s;
 }
 
 /* 收藏数 - 显示在按钮正上方 */
