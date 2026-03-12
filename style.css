@@ -802,14 +802,15 @@ body.light-theme .filter-actions button:last-child:hover {
 }
 
 .favorite-icon {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     line-height: 1;
 }
 
 .favorite-count {
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: 0.7rem;
+    font-weight: 800;
     line-height: 1;
+    margin-top: -2px;
 }
 
 header h1 {
