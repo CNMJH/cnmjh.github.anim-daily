@@ -406,7 +406,10 @@ body.light-theme .favorite-btn.active {
 }
 
 body.light-theme .favorite-count {
-    color: #64748b;
+    background: rgba(255,255,255,0.95);
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }
 
 body.light-theme .modal-content {
@@ -766,18 +769,16 @@ body.light-theme .filter-actions button:last-child:hover {
     position: absolute;
     bottom: 12px;
     right: 12px;
-    width: 56px;
-    height: 56px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     background: rgba(0,0,0,0.7);
     border: 2px solid rgba(255,255,255,0.3);
     color: #fff;
     cursor: pointer;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
     transition: all 0.3s;
     backdrop-filter: blur(6px);
     box-shadow: 0 4px 14px rgba(0,0,0,0.35);
@@ -802,15 +803,25 @@ body.light-theme .filter-actions button:last-child:hover {
 }
 
 .favorite-icon {
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     line-height: 1;
 }
 
+/* 收藏数 - 显示在按钮正上方 */
 .favorite-count {
-    font-size: 0.7rem;
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    font-size: 0.75rem;
     font-weight: 800;
-    line-height: 1;
-    margin-top: -2px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    white-space: nowrap;
 }
 
 header h1 {
