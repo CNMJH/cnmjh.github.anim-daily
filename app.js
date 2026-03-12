@@ -1701,6 +1701,7 @@ function renderWorks(works) {
                 <span class="work-type-tag ${item.type}">${typeText}</span>
                 <button class="favorite-btn ${favClass}" onclick="toggleFavorite('${workId.replace(/'/g, "\\'")}', event)" title="收藏" style="pointer-events: auto;">
                     <span class="favorite-icon">${favIcon}</span>
+                    <span class="favorite-count">${favorites.has(workId) ? '1' : '0'}</span>
                 </button>
             </div>
             <div class="work-content">
